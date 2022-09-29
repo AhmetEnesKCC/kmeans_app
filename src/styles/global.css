@@ -1,0 +1,53 @@
+@tailwind components;
+@tailwind base;
+@tailwind utilities;
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  user-select: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  width: 100vw;
+  height: 100vh;
+  background-color: #1a1926;
+}
+
+button,
+input {
+  -webkit-app-region: no-drag !important;
+}
+
+/* .wrapper {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  @apply p-4;
+  background-color: #1a1926;
+} */
+
+button:hover {
+  @apply brightness-110;
+}
+
+.summary-wrapper {
+  @apply h-[calc(100vh-100px)] fixed top-[100px] left-0 bg-slate-800 w-screen z-10 text-white px-4 py-6;
+}
+
+.summary-wrapper h3 {
+  @apply text-2xl capitalize mb-6 mt-10;
+}
+
+.summary-wrapper ul {
+  @apply flex whitespace-nowrap flex-wrap gap-3;
+}
+
+.summary-wrapper ul li {
+  @apply px-4 py-1 bg-slate-600 rounded-sm;
+}

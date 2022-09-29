@@ -1,0 +1,51 @@
+.sidebar {
+  @apply overflow-auto h-full flex-1  shadow-md bg-[#212327] px-3;
+}
+
+.sidebar-title {
+  @apply text-center font-bold text-lg mt-10;
+}
+
+/* TREEVIEW */
+
+.treeview {
+  @apply py-2 overflow-hidden flex flex-col text-white;
+}
+
+.treeview .folder-children {
+  @apply border-l-2 border-opacity-20 border-white ml-2;
+}
+
+.treeview hr {
+  @apply w-[20px] opacity-20 mr-[30px] -ml-2;
+}
+
+.treeview .folder-label,
+.treeview .file {
+  @apply rounded-lg px-2 flex   items-center my-2   text-lg hover:bg-white hover:bg-opacity-20  py-1 cursor-pointer;
+}
+
+.treeview .content {
+  @apply pl-2 block overflow-hidden text-ellipsis whitespace-nowrap bg-transparent;
+}
+
+.treeview .dragging {
+  @apply !bg-[#d5e8be] text-black;
+}
+
+/* SETTINGS */
+
+.settings {
+  @apply p-2 flex flex-col gap-y-8;
+}
+.settings .settings-input {
+  @apply flex flex-col gap-y-4;
+}
+
+.settings .settings-input label {
+  @apply text-xl text-opacity-70 font-bold text-white;
+}
+
+.settings .settings-input input {
+  @apply text-white border-white border-2 border-opacity-40 rounded-lg py-3 px-4  bg-transparent outline-none focus:border-opacity-80;
+}

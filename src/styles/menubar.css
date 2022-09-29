@@ -1,0 +1,15 @@
+.menu-bar {
+  @apply h-full w-max p-2 flex flex-col items-end space-y-5 py-5 bg-[#1c1d21]  border-white border-opacity-40;
+}
+
+.menu-bar--item {
+  @apply opacity-40 flex  items-center justify-center p-2 cursor-pointer hover:opacity-70 hover:bg-black hover:bg-opacity-10;
+}
+
+.menu-bar--item svg {
+  @apply text-3xl;
+}
+
+.menu-bar--item.selected {
+  @apply border-l-2 opacity-100;
+}

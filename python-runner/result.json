@@ -1,0 +1,1 @@
+[{"categories": ["binary method-max norm"], "series": {"sse": [0.017672718051580265], "time": [0.0005098859999270644]}, "data": [{"sse": 0.017672718051580265, "iter": 5.0, "time": 0.0005098859999270644, "total-time": 0.004643064000010782, "algorithm_name": "binary method.py", "dataset_name": "a1-k20.csv", "normalization_name": "max norm.py"}], "labelWOExt": "a1-k20"}]
