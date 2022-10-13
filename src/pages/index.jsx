@@ -152,6 +152,12 @@ const IndexPage = () => {
 
   const [data, setData] = useState([]);
 
+  useEffect(() => {
+    ipcRenderer.on("log-from-main", (e, data) => {
+      console.log(data);
+    });
+  }, []);
+
   return (
     <div className="index-page">
       <div className="drag-area--container">

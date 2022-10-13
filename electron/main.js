@@ -8,6 +8,7 @@ const {
   readFileSync,
   statSync,
 } = require("fs");
+
 const { PythonShell } = require("python-shell");
 const { DateTime } = require("luxon");
 const convertHumanReadable = require("./helpers/converHumanReadable");
@@ -15,7 +16,15 @@ const { data } = require("autoprefixer");
 const { exec, execSync, spawn, spawnSync } = require("child_process");
 const { eventWrapper } = require("@testing-library/user-event/dist/utils");
 
-require("electron-reload")(__dirname);
+const pythonRunnerLocation = () => {
+  return isDev
+    ? join(process.cwd(), "python-runner")
+    : join(app.getAppPath(), "..", "..", "python-runner");
+};
+
+const isDev = require("electron-is-dev");
+const url = require("url");
+const { join } = require("path");
 require("dotenv").config(__dirname);
 
 const disabledAlgorithms = [
@@ -39,6 +48,10 @@ let staticOptions = {
   frame: false,
 };
 
+const logToMain = (logObject) => {
+  mainWindow.webContents.send("log-from-main", logObject);
+};
+
 const staticFilePath = (fileName) => {
   return path.resolve(public_path, fileName);
 };
@@ -60,11 +73,13 @@ const createMainWindow = () => {
   };
 
   mainWindow = new BrowserWindow(mainWindowOptions);
-  mainWindow.loadURL("http://localhost:3000/");
+  mainWindow.loadURL(
+    isDev ? "http://localhost:3000" : `file://${__dirname}/../build/index.html`
+  );
+  mainWindow.webContents.openDevTools();
 };
-
 app.on("ready", () => {
-  createCheckWindow();
+  createMainWindow();
 });
 
 const createOutputWindow = () => {
@@ -74,7 +89,7 @@ const createOutputWindow = () => {
   };
 
   outputWindow = new BrowserWindow(outputWindowOptions);
-  outputWindow.loadURL("http://localhost:3000/output");
+  outputWindow.loadURL(path.join(__dirname, "build", "index.html"));
 };
 
 ipcMain.on("pin", (e, pin) => {
@@ -128,6 +143,7 @@ const readFolders = async (basePath, folderName, fileType) => {
       content: folderContent,
     };
   } catch (err) {
+    logToMain(err);
     return { status: "error", content: err };
   }
 };
@@ -135,7 +151,7 @@ const readFolders = async (basePath, folderName, fileType) => {
 var globalArgs = [];
 
 ipcMain.on("treeview-loaded", async () => {
-  const basePath = path.join(process.cwd(), "python-runner");
+  const basePath = pythonRunnerLocation();
   const algorithms = await readFolders(basePath, "algorithms", "algorithms");
   const datasets = await readFolders(basePath, "datasets", "datasets");
   const normalizations = await readFolders(
@@ -163,6 +179,7 @@ ipcMain.on("treeview-loaded", async () => {
       fileType: "normalizations",
     },
   ];
+  logToMain(data_object);
 
   mainWindow.webContents.send("get-data", data_object);
 
@@ -214,20 +231,21 @@ class PythonRunner {
     globalArgs = args;
     try {
       writeFileSync(
-        path.join(process.cwd(), "python-runner", "arguments.json"),
+        path.join(pythonRunnerLocation(), "arguments.json"),
         JSON.stringify(args),
         {
           encoding: "utf8",
         }
       );
     } catch (err) {
+      logToMain(err);
       console.log(err);
     }
   }
 
   log(logType) {
     appendFileSync(
-      path.join(process.cwd(), "python-runner", "log.txt"),
+      path.join(pythonRunnerLocation(), "log.txt"),
       logType + " " + DateTime.now().toString() + "\n",
       {
         encoding: "utf8",
@@ -238,11 +256,12 @@ class PythonRunner {
   sendResultToWindow() {
     try {
       let resultData = readFileSync(
-        path.join(process.cwd(), "python-runner", "result.json")
+        path.join(pythonRunnerLocation(), "result.json")
       );
       !mainWindow.isDestroyed() &&
         mainWindow.webContents.send("output-result", String(resultData));
     } catch (err) {
+      logToMain(err);
       console.log(err);
     }
   }
@@ -252,10 +271,10 @@ class PythonRunner {
     if (!this.shell?.terminated) this.shell?.kill();
   }
 
-  runScript(scriptFile = path.join("main.py")) {
+  runScript(scriptFile = "main.py") {
     this.stopped = false;
     let shell = new PythonShell(scriptFile, {
-      scriptPath: path.join(process.cwd(), "python-runner"),
+      scriptPath: pythonRunnerLocation(),
       args: [globalArgs.datasets, globalArgs.algorithms],
     });
     this.shell = shell;
@@ -317,6 +336,7 @@ ipcMain.on("get-checks", () => {
   const checkScript = async (script, args = []) => {
     let { error } = await spawnSync(script, args);
     if (error) {
+      logToMain(error);
       console.log(error);
       return false;
     } else {
@@ -332,19 +352,30 @@ ipcMain.on("get-checks", () => {
     });
 
   const checkPython = async () => {
-    let r = await checkScript("python");
-    return r;
+    let r1 = await checkScript("python");
+    let r2 = await checkScript("python3");
+    return r1 || r2;
   };
 
   const checkPip = async () => {
-    let r = await checkScript("pip");
-    return r;
+    let r1 = await checkScript("pip");
+    let r2 = await checkScript("pip3");
+    return r1 || r2;
   };
 
   const checkPipPackages = async () => {
-    let r1 = await checkScript("pip", ["show", "numpy"]);
-    let r2 = await checkScript("pip", ["show", "pandas"]);
-    return r1 && r2;
+    let r11 = await checkScript("python", ["-c", '"import numpy"']);
+    let r12 = await checkScript("python3", ["-c", '"import numpy"']);
+    let r21 = await checkScript("python", ["-c", '"import pandas"']);
+    let r22 = await checkScript("python3", ["-c", '"import pandas"']);
+
+    return (r11 || r12) && (r21 || r22);
+  };
+
+  const checkSKLearn = async () => {
+    let r1 = await checkScript("python", ["-c", '"import sklearn"']);
+    let r2 = await checkScript("python3", ["-c", '"import sklearn"']);
+    return r1 || r2;
   };
 
   const checks = [];
@@ -373,6 +404,8 @@ ipcMain.on("get-checks", () => {
     await checkPackage("Checking Pip", checkPip);
     await sleep(1000);
     await checkPackage("Checking Numpy and Pandas", checkPipPackages);
+    await sleep(1000);
+    await checkPackage("Checking Sklearn", checkSKLearn);
     await sleep(1000);
     if (checks.every((c) => c)) {
       await sleep(300);

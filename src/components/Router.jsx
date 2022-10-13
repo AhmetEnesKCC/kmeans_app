@@ -1,19 +1,19 @@
 import React from "react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { HashRouter, Route, Routes } from "react-router-dom";
 import IndexPage from "../pages";
 import OutputPage from "../pages/output";
 import Layout from "./Layout/index";
 
 const Router = () => {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Layout>
         <Routes>
           <Route path="/" element={<IndexPage />} exact />
           <Route path="/output" element={<OutputPage />} exact />
         </Routes>
       </Layout>
-    </BrowserRouter>
+    </HashRouter>
   );
 };
 
