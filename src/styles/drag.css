@@ -3,23 +3,19 @@
 }
 
 .drag-area {
-  @apply flex flex-col p-2 flex-1 min-w-min w-full max-h-[50vh] overflow-auto bg-[#25262c] rounded-xl;
+  @apply flex flex-col p-2 flex-1 min-w-min w-full max-h-[50vh] overflow-auto border-gray-200 border-opacity-20 border-[0.4px]  rounded-xl;
 }
 
 .drag-area.droppable {
   @apply bg-[#d5e8be] text-black;
 }
 
-.drag-area--title {
-  @apply mb-2  text-xl font-normal font-mono flex justify-between items-center px-2;
-}
-
-.drag-area--title .drag-area--clean {
+.drag-area--clean {
   @apply bg-red-300 text-white bg-opacity-20 font-mono text-lg shadow-lg px-2 rounded-lg;
 }
 
 .drag-area--content {
-  @apply flex flex-1  content-start flex-wrap max-w-full min-w-[200px] p-4 min-h-[200px] h-full overflow-auto shadow-lg bg-[#292b31]  rounded-lg gap-y-5 gap-x-5;
+  @apply flex flex-1 bg-[#464852]  content-start flex-wrap max-w-full min-w-[200px] p-4 min-h-[200px] h-full overflow-auto shadow-lg   rounded-lg gap-y-5 gap-x-5;
 }
 
 .drag-area--data {

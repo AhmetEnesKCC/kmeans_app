@@ -1,3 +1,6 @@
+import { MantineProvider } from "@mantine/core";
+import { ModalsProvider } from "@mantine/modals";
+import { NotificationsProvider } from "@mantine/notifications";
 import React from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -11,8 +14,14 @@ import "./styles/global.css";
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <Provider store={Store}>
-    <DndProvider backend={HTML5Backend}>
-      <Router />
-    </DndProvider>
+    <MantineProvider theme={{ colorScheme: "dark" }}>
+      <NotificationsProvider>
+        <ModalsProvider>
+          <DndProvider backend={HTML5Backend}>
+            <Router />
+          </DndProvider>
+        </ModalsProvider>
+      </NotificationsProvider>
+    </MantineProvider>
   </Provider>
 );

@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require("electron");
+const { app, BrowserWindow, ipcMain, shell } = require("electron");
 const { nanoid } = require("@reduxjs/toolkit");
 const path = require("path");
 const {
@@ -76,7 +76,7 @@ const createMainWindow = () => {
   mainWindow.loadURL(
     isDev ? "http://localhost:3000" : `file://${__dirname}/../build/index.html`
   );
-  mainWindow.webContents.openDevTools();
+  isDev && mainWindow.webContents.openDevTools();
 };
 app.on("ready", () => {
   createMainWindow();
@@ -332,9 +332,20 @@ ipcMain.on("output-window-loaded", () => {
 
 /* Check Window */
 
+let stopCheck = false;
+
+ipcMain.on("check:abort", () => {
+  stopCheck = true;
+});
+
 ipcMain.on("get-checks", () => {
+  stopCheck = false;
+
   const checkScript = async (script, args = []) => {
-    let { error } = await spawnSync(script, args);
+    let { error } = await spawnSync(
+      script === "python3" && process.platform === "win32" ? "python" : script,
+      args
+    );
     if (error) {
       logToMain(error);
       console.log(error);
@@ -378,7 +389,7 @@ ipcMain.on("get-checks", () => {
     return r1 || r2;
   };
 
-  const checks = [];
+  var checks = [];
 
   const checkPackage = async (label, checkFunction) => {
     const checkId = nanoid();
@@ -388,29 +399,30 @@ ipcMain.on("get-checks", () => {
       status: "start",
     };
 
-    checkWindow?.webContents.send("check-start", check);
+    !stopCheck && mainWindow?.webContents.send("check-start", check);
     const result = await checkFunction();
     await sleep(1000);
-    checkWindow?.webContents.send("check-end", {
-      status: result ? "success" : "fail",
-      id: checkId,
-    });
+    !stopCheck &&
+      mainWindow?.webContents.send("check-end", {
+        status: result ? "success" : "fail",
+        id: checkId,
+      });
     checks.push(result);
   };
 
   const checkPackages = async () => {
-    await checkPackage("Checking Python", checkPython);
+    await checkPackage("Python", checkPython);
     await sleep(1000);
-    await checkPackage("Checking Pip", checkPip);
+    await checkPackage("Pip", checkPip);
     await sleep(1000);
-    await checkPackage("Checking Numpy and Pandas", checkPipPackages);
+    await checkPackage("Numpy and Pandas", checkPipPackages);
     await sleep(1000);
-    await checkPackage("Checking Sklearn", checkSKLearn);
+    await checkPackage("Sklearn", checkSKLearn);
     await sleep(1000);
     if (checks.every((c) => c)) {
-      await sleep(300);
-      createMainWindow();
-      checkWindow?.close();
+      mainWindow.send("check-success");
+    } else {
+      mainWindow.send("check-fail");
     }
   };
 
@@ -433,4 +445,8 @@ ipcMain.on("app-control:minimize", (e) => {
   const windowID = e.sender.id;
   const window = BrowserWindow.getAllWindows().find((w) => w.id === windowID);
   window.minimize();
+});
+
+ipcMain.on("menu:github", () => {
+  shell.openExternal("https://github.com/AhmetEnesKCC/kmeans_app");
 });

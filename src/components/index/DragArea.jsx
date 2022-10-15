@@ -1,6 +1,9 @@
+import { Box, Stack, Text } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { useDrop } from "react-dnd";
 import { useSelector } from "react-redux";
+
+import { RiDragDropLine, RiRouteLine } from "react-icons/ri";
 
 import "../../styles/drag.css";
 
@@ -55,19 +58,25 @@ const DragArea = ({ title, accept, onDrop, ...props }) => {
       ref={drop}
     >
       <div className="drag-area--title">
-        {title}{" "}
-        {data.length > 0 && (
-          <button
-            className="drag-area--clean"
-            onClick={() => {
-              setData([]);
-            }}
-          >
-            Temizle
-          </button>
-        )}
+        <Stack align={"center"} sx={{ width: "100%" }}>
+          <Text align="center" size={18} weight="lighter">
+            {title}
+          </Text>
+          <Box sx={{ width: 80, height: 80 }}>
+            <RiRouteLine className="w-full h-auto opacity-20" />
+          </Box>
+        </Stack>
       </div>
       <div className="drag-area--content">
+        {data.length === 0 && (
+          <Stack
+            justify={"center"}
+            align="center"
+            sx={{ flex: 1, width: "100%", height: "100%" }}
+          >
+            <RiDragDropLine opacity={0.3} size={60} />
+          </Stack>
+        )}
         {data.map((d) => (
           <div
             className="drag-area--data"
@@ -79,6 +88,16 @@ const DragArea = ({ title, accept, onDrop, ...props }) => {
           </div>
         ))}
       </div>
+      {data.length > 0 && (
+        <button
+          className="drag-area--clean"
+          onClick={() => {
+            setData([]);
+          }}
+        >
+          Temizle
+        </button>
+      )}
     </div>
   );
 };
