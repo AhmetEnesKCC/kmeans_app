@@ -4,7 +4,6 @@ import { useState } from "react";
 import { IoIosArrowUp, IoMdClose } from "react-icons/io";
 import { useSelector } from "react-redux";
 
-import "../../styles/output.css";
 import ResizableArea from "../ResizableArea";
 
 import { red, white } from "tailwindcss/colors";
@@ -33,15 +32,15 @@ const Output = () => {
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState(null);
 
-  useEffect(() => {
-    console.log(outputStep);
-    setProgress(
-      Math.floor(
-        (outputStep * 100) /
-          (datasets.length * algorithms.length * normalizations.length * loop)
-      )
-    );
-  }, [outputStep]);
+  // useEffect(() => {
+  //   console.log(outputStep);
+  //   setProgress(
+  //     Math.floor(
+  //       (outputStep * 100) /
+  //         (datasets.length * algorithms.length * normalizations.length * loop)
+  //     )
+  //   );
+  // }, [outputStep]);
 
   useEffect(() => {
     setTab("terminal");

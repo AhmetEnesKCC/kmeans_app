@@ -1,3 +1,4 @@
+import { ActionIcon, Button, UnstyledButton } from "@mantine/core";
 import { AiOutlineClose } from "react-icons/ai";
 
 const { ipcRenderer } = window.require("electron");
@@ -8,9 +9,14 @@ const CloseButton = () => {
   };
 
   return (
-    <button onClick={handleClose} className="app-control--close">
+    <Button
+      variant="subtle"
+      color="red.5"
+      onClick={handleClose}
+      className="app-control--close text-white"
+    >
       <AiOutlineClose />
-    </button>
+    </Button>
   );
 };
 

@@ -11,8 +11,6 @@ import ResultTable from "../components/output/resultTable";
 import { setSelectedNormalizations } from "../redux/argumentSlice";
 import { setCodeStatus } from "../redux/codeStatusSlice";
 
-import "../styles/output.css";
-
 const { ipcRenderer } = window.require("electron");
 
 const OutputPage = () => {

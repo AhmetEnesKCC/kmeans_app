@@ -1,15 +1,12 @@
-import { Box, Stack, Text } from "@mantine/core";
+import { Box, Button, Group, Stack, Text } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { useDrop } from "react-dnd";
-import { useSelector } from "react-redux";
+import { BiTrash } from "react-icons/bi";
 
-import { RiDragDropLine, RiRouteLine } from "react-icons/ri";
-
-import "../../styles/drag.css";
+import { RiDragDropLine } from "react-icons/ri";
 
 const DragArea = ({ title, accept, onDrop, ...props }) => {
   const [data, setData] = useState([]);
-  const codeStatus = useSelector((state) => state.codeStatus);
 
   useEffect(() => {
     onDrop?.(data);
@@ -52,19 +49,38 @@ const DragArea = ({ title, accept, onDrop, ...props }) => {
     <div
       className={`drag-area  ${canDrop ? "droppable" : ""} ${
         props.className ? props.className : ""
-      } ${
-        codeStatus === "pressed-run" && data.length === 0 && "animate-warn-user"
-      }`}
+      } `}
       ref={drop}
     >
       <div className="drag-area--title">
         <Stack align={"center"} sx={{ width: "100%" }}>
-          <Text align="center" size={18} weight="lighter">
-            {title}
-          </Text>
-          <Box sx={{ width: 80, height: 80 }}>
-            <RiRouteLine className="w-full h-auto opacity-20" />
+          <Box
+            sx={{
+              textAlign: "center",
+              fontSize: 50,
+              opacity: 0.3,
+              margin: "4px",
+            }}
+          >
+            {props.icon}
           </Box>
+          <Group sx={{ marginBottom: 10 }}>
+            {data.length > 0 && (
+              <Button
+                className="drag-area--clean"
+                leftIcon={<BiTrash />}
+                color={"red"}
+                onClick={() => {
+                  setData([]);
+                }}
+              >
+                Temizle
+              </Button>
+            )}
+            <Text align="center" size={18} weight="lighter">
+              {title}
+            </Text>
+          </Group>
         </Stack>
       </div>
       <div className="drag-area--content">
@@ -88,16 +104,6 @@ const DragArea = ({ title, accept, onDrop, ...props }) => {
           </div>
         ))}
       </div>
-      {data.length > 0 && (
-        <button
-          className="drag-area--clean"
-          onClick={() => {
-            setData([]);
-          }}
-        >
-          Temizle
-        </button>
-      )}
     </div>
   );
 };

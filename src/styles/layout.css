@@ -1,56 +1,18 @@
 .app {
-  @apply w-screen overflow-hidden flex flex-col h-screen  text-white;
+  width: 100vw;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
 }
 
 .wrapper {
-  @apply flex-1 self-stretch flex   min-h-0;
+  display: flex;
+  align-self: stretch;
+  flex: 1;
+  min-height: 0;
 }
 
 .appbar {
-  @apply bg-black flex justify-between;
   -webkit-app-region: drag;
-}
-
-.app-controls {
-  @apply flex items-center justify-end;
-}
-
-.app-controls button {
-  @apply p-3;
-}
-
-.app-controls button:hover {
-  @apply bg-white bg-opacity-10;
-}
-
-.app-controls button.app-control--close:hover {
-  @apply bg-red-500 text-white;
-}
-
-.app-menus {
-  @apply w-max p-2;
-}
-
-.app-menus .menu-target {
-  @apply border-[2px] border-opacity-20 border-white p-1 rounded-sm;
-}
-
-.topbar {
-  @apply shadow-md w-full py-2 bg-[#53555b] flex justify-end px-4 space-x-2 shrink-0;
-}
-
-.topbar .topbar-controls {
-  @apply flex space-x-2;
-}
-
-.topbar .topbar-controls button {
-  @apply rounded-lg p-1 px-2 gap-x-2 box-content text-xl flex items-center;
-}
-
-.topbar .topbar-controls button:hover {
-  @apply bg-white bg-opacity-30;
-}
-
-.content {
-  @apply flex-1 overflow-auto bg-[#292b2f];
 }

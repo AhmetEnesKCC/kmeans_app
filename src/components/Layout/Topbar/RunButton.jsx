@@ -1,3 +1,4 @@
+import { Button } from "@mantine/core";
 import { BsPlayFill } from "react-icons/bs";
 import { useDispatch, useSelector } from "react-redux";
 import { setCodeStatus } from "../../../redux/codeStatusSlice";
@@ -9,7 +10,10 @@ const RunButton = () => {
   const selectedArguments = useSelector((state) => state.selectedArguments);
 
   return (
-    <button
+    <Button
+      rightIcon={<BsPlayFill />}
+      variant="outline"
+      color={"green"}
       onClick={() => {
         const { algorithms, datasets, normalizations, loop } =
           selectedArguments;
@@ -28,8 +32,8 @@ const RunButton = () => {
       }}
       className="content-controls"
     >
-      Run <BsPlayFill />
-    </button>
+      Run
+    </Button>
   );
 };
 

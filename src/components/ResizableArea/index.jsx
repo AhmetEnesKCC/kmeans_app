@@ -1,8 +1,6 @@
 import { forwardRef } from "react";
 import useResize from "../../hooks/useResize";
 
-import "../../styles/resizable.css";
-
 const ResizableArea = ({
   className,
   children,

@@ -3,7 +3,6 @@ import { useDrop } from "react-dnd";
 import DragArea from "../components/index/DragArea";
 import ContentInfo from "../components/index/ContentInfo";
 
-import "../styles/index.css";
 import { useDispatch, useSelector } from "react-redux";
 import Output from "../components/index/Output";
 import {
@@ -11,141 +10,11 @@ import {
   setSelectedDatasets,
   setSelectedNormalizations,
 } from "../redux/argumentSlice";
+import { RiRouteLine } from "react-icons/ri";
+import { AiFillDatabase } from "react-icons/ai";
+import { TiWaves } from "react-icons/ti";
+import { showNotification } from "@mantine/notifications";
 const { ipcRenderer } = window.require("electron");
-
-// import { useSelector, useDispatch } from "react-redux";
-// import {
-//   setLoop,
-//   setSelectedAlgos,
-//   setSelectedDatasets,
-//   setSelectedNormalizations,
-// } from "../redux/argumentSlice";
-// import CategoryTab from "../components/index/CategoryTab";
-// import TabWrapper from "../components/index/TabWrapper";
-
-// const IndexPage = () => {
-//   const {
-//     algorithms: selectedAlgorithms,
-//     datasets: selectedDatasets,
-//     normalizations: selectedNormalizations,
-//     loop,
-//   } = useSelector((state) => state.selectedArguments);
-
-//   const [algorithms, setalgorithms] = useState([]);
-//   const [dataSets, setDataSets] = useState([]);
-//   const [normalizations, setNormalizations] = useState([]);
-
-//   const [selectedTab, setSelectedTab] = useState(0);
-
-//   const dispatch = useDispatch();
-
-//   const dispathcSetLoop = (loop) => {
-//     dispatch(setLoop(loop));
-//   };
-
-//   const dispatchSelectAlgos = (algos) => {
-//     dispatch(setSelectedAlgos(algos));
-//   };
-//   const dispatchSelectDs = (ds) => {
-//     dispatch(setSelectedDatasets(ds));
-//   };
-
-//   const dispatchSelectNormalizations = (no) => {
-//     dispatch(setSelectedNormalizations(no));
-//   };
-
-//   useEffect(() => {
-//     ipcRenderer.send("index-window-loaded");
-//     ipcRenderer.on(
-//       "algorithms",
-//       (e, { message: algorithms, status, disabledCount }) => {
-//         if (status !== "error") {
-//           setalgorithms({ content: algorithms, disabledCount });
-//         }
-//       }
-//     );
-//     ipcRenderer.on("datasets", (e, { message: datasets, status }) => {
-//       if (status !== "error") {
-//         setDataSets({ content: datasets });
-//       }
-//     });
-//     ipcRenderer.on(
-//       "normalizations",
-//       (e, { message: normalizations, status }) => {
-//         if (status !== "error") {
-//           setNormalizations({ content: normalizations });
-//         }
-//       }
-//     );
-//   }, []);
-
-//   const handleLoopInput = (e) => {
-//     let value = e.target.value;
-//     dispathcSetLoop(parseInt(value));
-//   };
-
-//   return (
-//     <>
-//       <Category>
-//         <Category.Title>Loop</Category.Title>
-//         <input
-//           type={"number"}
-//           min={2}
-//           max={10000}
-//           value={loop}
-//           onChange={handleLoopInput}
-//         />
-//       </Category>
-//       <TabWrapper
-//         selected={selectedTab}
-//         tabs={[
-//           { label: "Algoritmalar", index: 0 },
-//           { label: "Datasetler", index: 1 },
-//           { label: "Normalizasyonlar", index: 2 },
-//         ]}
-//         onSelect={(index) => {
-//           setSelectedTab(index.index);
-//         }}
-//       />
-//       {selectedTab === 0 && (
-//         <CategoryTab
-//           defaultSelected={selectedAlgorithms}
-//           key={selectedTab}
-//           onSelect={(al) => {
-//             dispatchSelectAlgos(al);
-//           }}
-//           data={algorithms}
-//           placeholder="Algoritma Ara"
-//           title="Algoritmalar"
-//         />
-//       )}
-//       {selectedTab === 1 && (
-//         <CategoryTab
-//           defaultSelected={selectedDatasets}
-//           key={selectedTab}
-//           onSelect={(ds) => {
-//             dispatchSelectDs(ds);
-//           }}
-//           data={dataSets}
-//           placeholder="Dataset Ara"
-//           title="Datasetler"
-//         />
-//       )}
-//       {selectedTab === 2 && (
-//         <CategoryTab
-//           defaultSelected={selectedNormalizations}
-//           key={selectedTab}
-//           onSelect={(no) => {
-//             dispatchSelectNormalizations(no);
-//           }}
-//           data={normalizations}
-//           placeholder="Normalizasyon Ara"
-//           title="Normalizasyonlar"
-//         />
-//       )}
-//     </>
-//   );
-// };
 
 const IndexPage = () => {
   const dispatch = useDispatch();
@@ -157,6 +26,31 @@ const IndexPage = () => {
       console.log(data);
     });
   }, []);
+  const codeStatus = useSelector((state) => state.codeStatus);
+  const selectedArguments = useSelector((state) => state.selectedArguments);
+
+  const isValid = (obj, keys) => {
+    let result = true;
+    keys.map((key) => {
+      if (obj[key].length === 0) {
+        result = false;
+      }
+      return true;
+    });
+    return result;
+  };
+
+  useEffect(() => {
+    if (
+      codeStatus === "pressed-run" &&
+      !isValid(selectedArguments, ["algorithms", "normalizations", "datasets"])
+    )
+      showNotification({
+        message:
+          "You need to select at least 1 algorithm, 1 dataset and 1 normalization technique. Forcing to add a normalization technique will be removed in the one of the next updates.",
+        color: "red",
+      });
+  }, [codeStatus, selectedArguments]);
 
   return (
     <div className="index-page">
@@ -167,6 +61,7 @@ const IndexPage = () => {
           }}
           accept="algorithms"
           title={"Algoritmalar"}
+          icon={<RiRouteLine />}
         />
         <DragArea
           onDrop={(data) => {
@@ -174,6 +69,7 @@ const IndexPage = () => {
           }}
           accept="datasets"
           title={"Datasetler"}
+          icon={<AiFillDatabase />}
         />
         <DragArea
           onDrop={(data) => {
@@ -181,6 +77,7 @@ const IndexPage = () => {
           }}
           accept="normalizations"
           title={"Normalizasyonlar"}
+          icon={<TiWaves />}
         />
       </div>
       <Output />

@@ -1,3 +1,4 @@
+import { ActionIcon, Button } from "@mantine/core";
 import { VscChromeMaximize } from "react-icons/vsc";
 
 const { ipcRenderer } = window.require("electron");
@@ -8,9 +9,9 @@ const MaximizeButton = () => {
   };
 
   return (
-    <button onClick={handleMaximize}>
+    <Button variant="subtle" onClick={handleMaximize}>
       <VscChromeMaximize />
-    </button>
+    </Button>
   );
 };
 

@@ -1,3 +1,4 @@
+import { Box, FileInput, Stack } from "@mantine/core";
 import { useEffect, useState } from "react";
 import File from "./File";
 import Folder from "./Folder";
@@ -45,9 +46,9 @@ const Treeview = () => {
   };
 
   useEffect(() => {
-    ipcRenderer.on("get-data", (e, data) => {
-      setData(data);
-    });
+    // ipcRenderer.on("get-data", (e, data) => {
+    //   setData(data);
+    // });
   }, []);
 
   return <div className="treeview">{handleData(data)}</div>;

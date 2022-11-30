@@ -1,6 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
 import { setMenubar } from "../../redux/menubarSlice";
-import "../../styles/menubar.css";
 import { FilesMenuItem, SettingsMenuItem } from "./MenuItem";
 
 const MenuBar = () => {

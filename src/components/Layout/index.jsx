@@ -1,34 +1,54 @@
 import React from "react";
 import Sidebar from "../sidebar";
 import TopBar from "./Topbar";
-import "../../styles/layout.css";
 import Content from "./content";
 import Appbar from "./Appbar";
 import MenuBar from "../MenuBar/index.jsx";
 import { useLocation } from "react-router-dom";
 import Check from "../check";
+import { Box, Container, Group, Stack, Text } from "@mantine/core";
+import _ from "lodash";
+import PageBox from "./PageBox";
 
 const Layout = ({ children }) => {
-  const router = useLocation();
-  if (router.pathname === "/check") {
-    return (
-      <div className="app">
-        <Check />
-      </div>
-    );
-  }
-
+  const routePathName = useLocation()
+    .pathname.replace("-", " ")
+    .replace("/", "");
   // const showSummary = useSelector((state) => state.showSummary);
   return (
-    <div className="app">
+    <Stack
+      sx={{
+        width: "100vw",
+        height: "100vh",
+        overflow: "hidden",
+      }}
+    >
       <Appbar />
-      <TopBar />
-      <div className="wrapper">
-        <MenuBar />
+      <Group noWrap sx={{ flexGrow: 1, overflow: "hidden" }} align="start">
         <Sidebar />
-        <Content>{children}</Content>
-      </div>
-    </div>
+        <Stack
+          size={"lg"}
+          sx={{ width: "100%", height: "100%", overflow: "hidden" }}
+          p={10}
+        >
+          <Text
+            sx={(theme) => ({
+              color: theme.colorScheme === "dark" ? "white" : theme.colors.dark,
+              opacity: 0.7,
+              width: "max-content",
+              borderRadius: theme.radius.md,
+            })}
+            component={PageBox}
+            px={10}
+            size={18}
+            weight="bold"
+          >
+            {_.capitalize(routePathName === "" ? "home" : routePathName)}
+          </Text>
+          <Box sx={{ flex: 1, overflow: "hidden" }}>{children}</Box>
+        </Stack>
+      </Group>
+    </Stack>
   );
 };
 

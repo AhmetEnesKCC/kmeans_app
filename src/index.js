@@ -10,18 +10,13 @@ import Router from "./components/Router";
 import Store from "./redux/store";
 
 import "./styles/global.css";
+import "reactflow/dist/style.css";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <Provider store={Store}>
-    <MantineProvider theme={{ colorScheme: "dark" }}>
-      <NotificationsProvider>
-        <ModalsProvider>
-          <DndProvider backend={HTML5Backend}>
-            <Router />
-          </DndProvider>
-        </ModalsProvider>
-      </NotificationsProvider>
-    </MantineProvider>
+    <DndProvider backend={HTML5Backend}>
+      <Router />
+    </DndProvider>
   </Provider>
 );

@@ -6,6 +6,8 @@ import { openModal } from "@mantine/modals";
 import Check from "../../check";
 import About from "../../about";
 import Notes from "../../notes";
+import { Box, Button, Group } from "@mantine/core";
+import PageBox from "../PageBox";
 
 const { ipcRenderer } = window.require("electron");
 
@@ -55,16 +57,18 @@ const Appbar = () => {
   ];
 
   return (
-    <div className="appbar">
-      <div className="app-menus">
-        <AppMenu target="Help" dropdown={appMenuDropdown} />
-      </div>
-      <div className="app-controls">
-        <MinimizeButton />
-        <MaximizeButton />
-        <CloseButton />
-      </div>
-    </div>
+    <Box component={PageBox}>
+      <Group position="apart" p={3}>
+        <Box>
+          <AppMenu target="Help" dropdown={appMenuDropdown} />
+        </Box>
+        <Button.Group>
+          <MinimizeButton />
+          <MaximizeButton />
+          <CloseButton />
+        </Button.Group>
+      </Group>
+    </Box>
   );
 };
 

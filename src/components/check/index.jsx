@@ -4,7 +4,6 @@ import { useCallback } from "react";
 import { useEffect, useState } from "react";
 import { AiFillExperiment, AiOutlineCheck } from "react-icons/ai";
 import { ClipLoader } from "react-spinners";
-import "./check.css";
 
 const { ipcRenderer } = window.require("electron");
 

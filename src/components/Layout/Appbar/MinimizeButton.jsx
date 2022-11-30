@@ -1,3 +1,4 @@
+import { Button } from "@mantine/core";
 import { VscChromeMinimize } from "react-icons/vsc";
 
 const { ipcRenderer } = window.require("electron");
@@ -8,9 +9,9 @@ const MinimizeButton = () => {
   };
 
   return (
-    <button onClick={handleMinimize}>
+    <Button variant="subtle" onClick={handleMinimize}>
       <VscChromeMinimize />
-    </button>
+    </Button>
   );
 };
 

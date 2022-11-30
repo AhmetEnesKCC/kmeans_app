@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, shell } = require("electron");
+const { app, BrowserWindow, ipcMain, shell, dialog } = require("electron");
 const { nanoid } = require("@reduxjs/toolkit");
 const path = require("path");
 const {
@@ -8,6 +8,8 @@ const {
   readFileSync,
   statSync,
 } = require("fs");
+
+require("update-electron-app")();
 
 const { PythonShell } = require("python-shell");
 const { DateTime } = require("luxon");
@@ -449,4 +451,20 @@ ipcMain.on("app-control:minimize", (e) => {
 
 ipcMain.on("menu:github", () => {
   shell.openExternal("https://github.com/AhmetEnesKCC/kmeans_app");
+});
+
+ipcMain.on("open:dialog:folder", (e, inputName) => {
+  dialog
+    .showOpenDialog(mainWindow, {
+      properties: ["openDirectory"],
+    })
+    .then((res) => {
+      if (res.canceled) {
+        return;
+      }
+      mainWindow.webContents.send("folder:path", {
+        result: res.filePaths[0],
+        inputName,
+      });
+    });
 });

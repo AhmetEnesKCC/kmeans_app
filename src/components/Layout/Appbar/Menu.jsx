@@ -14,8 +14,8 @@ const BarMenu = ({ target, dropdown = [] }) => {
   return (
     <Menu sx={{ "-webkit-app-region": "no-drag" }} classNames={classes}>
       <Menu.Target>
-        <Button variant="white" className={classes.target}>
-          <Text sx={{ color: "white" }}>{target}</Text>
+        <Button variant="outline" className={classes.target}>
+          <Text>{target}</Text>
         </Button>
       </Menu.Target>
       <Menu.Dropdown>
