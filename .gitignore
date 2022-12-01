@@ -13,6 +13,8 @@
 
 /dist
 
+/python-runner/algorithms/*
+
 # misc
 .DS_Store
 .env.local
