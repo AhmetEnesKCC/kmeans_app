@@ -1,0 +1,18 @@
+.app {
+  width: 100vw;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.wrapper {
+  display: flex;
+  align-self: stretch;
+  flex: 1;
+  min-height: 0;
+}
+
+.appbar {
+  -webkit-app-region: drag;
+}

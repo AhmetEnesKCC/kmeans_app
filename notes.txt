@@ -1,0 +1,7 @@
+1. Bizim çalışmayan algoritmalarımız çalışıcak.
+2. Özellikle farklı boyutlardaki veri setleri üzerinde tüm algoritamalar çalıştırılıp sse ye göre sıralama yapıcak.
+3. Genel anlamda yöntemlerin (algoritmaların sıralama) ortalaması alınıcak.
+4. Uygulamayı yayınlıyacağım.
+   
+
+- UYGULAMA ŞİFRESİ: ÇORBA

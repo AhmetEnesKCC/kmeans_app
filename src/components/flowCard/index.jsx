@@ -1,0 +1,176 @@
+import {
+  ActionIcon,
+  Box,
+  Button,
+  CopyButton,
+  Divider,
+  Group,
+  Stack,
+  Text,
+} from "@mantine/core";
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { setArguments } from "../../redux/argumentSlice";
+import { DiRasberryPi } from "react-icons/di";
+import { BiClipboard, BiTrash } from "react-icons/bi";
+import { FcInfo } from "react-icons/fc";
+import { openModal } from "@mantine/modals";
+
+const FlowCard = ({ flowKey }) => {
+  const data = useSelector((state) => state.selectedArguments[flowKey]);
+
+  const labelChanger = {
+    algo: "Algorithms",
+    data: "Datasets",
+    norm: "Normalizations",
+  };
+
+  return (
+    <Box
+      sx={(theme) => ({
+        maxHeight: "50%",
+        minWidth: "30%",
+        maxWidth: "100%",
+      })}
+    >
+      <Stack
+        sx={(theme) => ({
+          borderColor: theme.colors.blue[4],
+          boxShadow: theme.shadows.md,
+          backgroundColor: "white",
+          borderWidth: 2,
+          height: "100%",
+        })}
+        p={2}
+      >
+        <Text variant="h5" weight={"bold"} align="center" sx={(theme) => ({})}>
+          {labelChanger[flowKey]}
+        </Text>
+        <Stack
+          sx={(theme) => ({
+            overflow: "auto",
+            height: "100%",
+          })}
+          p={10}
+        >
+          {data?.length > 0 &&
+            data.map((d) => {
+              return <FlowCardItem data={d} />;
+            })}
+          {data?.length === 0 && (
+            <Stack align="center">
+              <Text align="center">Buralar Hep Dutluktu</Text>
+              <DiRasberryPi size={40} opacity={0.5} />
+            </Stack>
+          )}
+        </Stack>
+      </Stack>
+    </Box>
+  );
+};
+
+const FlowCardItem = ({ data }) => {
+  const dispatch = useDispatch();
+  const selectedArguments = useSelector((state) => state.selectedArguments);
+
+  const handleDelete = () => {
+    const oldArguments = [...selectedArguments[data.fileType]];
+    const newArguments = oldArguments.filter((a) => a.path !== data.path);
+    dispatch(
+      setArguments({ ...selectedArguments, [data.fileType]: newArguments })
+    );
+  };
+
+  const handleInfo = () => {
+    openModal({
+      overflow: "inside",
+      children: (
+        <Stack>
+          {Object.keys(data).map((key) => (
+            <Stack
+              spacing={3}
+              sx={{
+                position: "relative",
+              }}
+            >
+              <CopyButton value={String(data[key])}>
+                {({ copied, copy }) => (
+                  <ActionIcon
+                    variant={"outline"}
+                    color={copied ? "green.5" : "gray.5"}
+                    sx={(theme) => ({
+                      position: "absolute",
+                      right: 2,
+                      top: 0,
+                    })}
+                    onClick={copy}
+                  >
+                    <BiClipboard />
+                  </ActionIcon>
+                )}
+              </CopyButton>
+              <Text transform="capitalize" weight="bold">
+                {String(key)}
+              </Text>
+              <Text
+                p={5}
+                sx={(theme) => ({
+                  background: theme.colors.gray[2],
+                  color: theme.colors.gray[8],
+                  overflow: "auto",
+                })}
+              >
+                {String(data[key])}
+              </Text>
+            </Stack>
+          ))}
+        </Stack>
+      ),
+    });
+  };
+
+  return (
+    <Group
+      position="apart"
+      p={2}
+      px={4}
+      sx={(theme) => ({
+        color: theme.colors.blue[8],
+        cursor: "pointer",
+        "&:hover": {
+          backgroundColor: theme.colors.gray[1],
+        },
+      })}
+    >
+      {data?.labelWOExt}
+      <Group>
+        <Box
+          p={3}
+          sx={(theme) => ({
+            "&:hover": {
+              background: theme.colors.red[5],
+              color: "white",
+              borderRadius: theme.radius.md,
+            },
+          })}
+        >
+          <BiTrash onClick={handleDelete} />
+        </Box>
+        <Box
+          p={3}
+          sx={(theme) => ({
+            "&:hover": {
+              background: theme.colors.gray[5],
+              color: "white",
+              borderRadius: theme.radius.md,
+            },
+          })}
+        >
+          <FcInfo onClick={handleInfo} />
+        </Box>
+      </Group>
+    </Group>
+  );
+};
+
+export default FlowCard;
