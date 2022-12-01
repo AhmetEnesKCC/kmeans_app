@@ -22,6 +22,7 @@
     "lodash": "^4.17.21",
     "luxon": "^3.0.3",
     "nanoid": "^4.0.0",
+    "postcss": "^8.4.19",
     "python-shell": "^3.0.1",
     "react": "^18.2.0",
     "react-dnd": "^16.0.1",
@@ -35,6 +36,7 @@
     "react-scripts": "5.0.1",
     "react-spinners": "^0.13.4",
     "reactflow": "^11.1.2",
+    "tailwindcss": "^3.2.4",
     "update-electron-app": "^2.0.1",
     "web-vitals": "^2.1.0"
   },
@@ -68,7 +70,7 @@
     ]
   },
   "devDependencies": {
-    "autoprefixer": "^10.4.8",
+    "autoprefixer": "^10.4.13",
     "electron": "^21.0.1",
     "electron-builder": "^23.3.3",
     "electron-reload": "^2.0.0-alpha.1"

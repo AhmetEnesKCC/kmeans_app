@@ -80,7 +80,6 @@ const IndexPage = () => {
           icon={<TiWaves />}
         />
       </div>
-      <Output />
     </div>
   );
 };

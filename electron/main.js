@@ -154,31 +154,27 @@ var globalArgs = [];
 
 ipcMain.on("treeview-loaded", async () => {
   const basePath = pythonRunnerLocation();
-  const algorithms = await readFolders(basePath, "algorithms", "algorithms");
-  const datasets = await readFolders(basePath, "datasets", "datasets");
-  const normalizations = await readFolders(
-    basePath,
-    "normalizations",
-    "normalizations"
-  );
+  const algorithms = await readFolders(basePath, "algorithms", "algo");
+  const datasets = await readFolders(basePath, "datasets", "data");
+  const normalizations = await readFolders(basePath, "normalizations", "norm");
   const data_object = [
     {
       iteratable: true,
       ...algorithms,
       label: "Algorithms",
-      fileType: "algorithms",
+      fileType: "algo",
     },
     {
       iteratable: true,
       ...datasets,
       label: "Datasets",
-      fileType: "datasets",
+      fileType: "data",
     },
     {
       iteratable: true,
       ...normalizations,
       label: "Normalizations",
-      fileType: "normalizations",
+      fileType: "norm",
     },
   ];
   logToMain(data_object);

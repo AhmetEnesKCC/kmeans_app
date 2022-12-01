@@ -9,6 +9,16 @@ import ResizableArea from "../ResizableArea";
 import { red, white } from "tailwindcss/colors";
 import Chart from "./Chart";
 import { useCallback } from "react";
+import {
+  Badge,
+  Box,
+  Button,
+  Divider,
+  Group,
+  Stack,
+  Switch,
+  Text,
+} from "@mantine/core";
 
 const { ipcRenderer } = window.require("electron");
 
@@ -21,9 +31,7 @@ const Output = () => {
 
   const [detailed, setDetailed] = useState(false);
 
-  const { algorithms, datasets, normalizations, loop } = useSelector(
-    (state) => state.selectedArguments
-  );
+  const selectedArguments = useSelector((state) => state.selectedArguments);
 
   const codeStatus = useSelector((state) => state.codeStatus);
 
@@ -32,15 +40,27 @@ const Output = () => {
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState(null);
 
-  // useEffect(() => {
-  //   console.log(outputStep);
-  //   setProgress(
-  //     Math.floor(
-  //       (outputStep * 100) /
-  //         (datasets.length * algorithms.length * normalizations.length * loop)
-  //     )
-  //   );
-  // }, [outputStep]);
+  useEffect(() => {
+    console.log(selectedArguments);
+    const multiplication =
+      selectedArguments.data.length *
+      selectedArguments.algo.length *
+      selectedArguments.norm.length *
+      selectedArguments.loop;
+    if (multiplication !== 0) {
+      setProgress(
+        Math.floor(
+          (outputStep * 100) /
+            (selectedArguments.data.length *
+              selectedArguments.algo.length *
+              selectedArguments.norm.length *
+              selectedArguments.loop)
+        )
+      );
+    } else {
+      setProgress(100);
+    }
+  }, [outputStep]);
 
   useEffect(() => {
     setTab("terminal");
@@ -78,7 +98,6 @@ const Output = () => {
     });
 
     ipcRenderer.on("output-result", (e, data) => {
-      console.log("x");
       setResult(JSON.parse(data));
     });
   }, []);
@@ -100,26 +119,179 @@ const Output = () => {
     }
   }, [tab]);
 
+  useEffect(() => {
+    ipcRenderer.send("run", selectedArguments);
+  }, []);
+
   const [maximize, setMaximize] = useState(false);
 
   const handleMaximize = useCallback(() => {
     setMaximize(!maximize);
   }, [maximize]);
 
-  if (outputMessage.length === 0) {
-    return <></>;
-  }
+  // if (outputMessage.length === 0) {
+  //   return <></>;
+  // }
 
   return (
-    <ResizableArea
-      className={`output ${maximize ? "maximize disable-resize" : ""}`}
-      rotation={"top"}
-      minSize={200}
-      maxSize={700}
-      defaultSize={300}
-      bg="#fafafa"
+    <Stack
+      sx={(theme) => ({
+        width: "100%",
+        height: "100%",
+        backgroundColor: "white",
+        boxShadow: theme.shadows.md,
+      })}
+      p={3}
+      px={6}
     >
-      <div className="output-title">
+      <Box
+        sx={(theme) => ({
+          width: "100%",
+          height: 6,
+          background: "transparent",
+          borderRadius: theme.radius.md,
+        })}
+        py={2}
+        px={1}
+      >
+        {outputMessage.length > 0 && !status && (
+          <Box
+            sx={(theme) => ({
+              backgroundColor: theme.colors.green[8],
+              width: progress + "%",
+              height: "100%",
+              borderRadius: theme.radius.md,
+            })}
+          ></Box>
+        )}
+      </Box>
+      <Group p={4}>
+        {status === "done" && <Badge color="green">Done</Badge>}
+        {status === "error" && <Badge color="red">Error</Badge>}
+        {status === null && <Badge color="orange">Processing</Badge>}
+        <Text weight="bold">{progress && progress + "%"}</Text>
+      </Group>
+
+      {tab === "graph" &&
+        result.map((r) => {
+          const createOptions = (prop, title) => {
+            return {
+              theme: {
+                mode: "dark",
+              },
+              tooltip: {
+                theme: "dark",
+              },
+              dataLabels: {
+                enabled: false,
+              },
+              labels: {
+                styles: {
+                  colors: ["white"],
+                },
+              },
+              chart: {
+                type: "bar",
+                foreColor: "white",
+              },
+              series: [
+                {
+                  name: title,
+                  data: r.series[prop],
+                  colors: [],
+                  show: false,
+                },
+              ],
+              xaxis: {
+                categories: r.categories,
+              },
+            };
+          };
+          return (
+            <div className="flex flex-col">
+              <div className="font-bold text-opacity-80 bg-white text-black w-max px-3 rounded-md mb-4">
+                {r.labelWOExt}
+              </div>
+              <div className="grid grid-cols-2 gap-x-4 mb-10  p-3">
+                <Chart
+                  title={"Time"}
+                  chartOptions={createOptions("time", "time")}
+                />
+                <Chart
+                  title={"SSE"}
+                  chartOptions={createOptions("sse", "sse")}
+                />
+              </div>
+            </div>
+          );
+        })}
+      <Stack
+        sx={{
+          width: "100%",
+          height: "100%",
+          overflow: "hidden",
+        }}
+        align="start"
+        justify="flex-start"
+        spacing={10}
+        p={4}
+      >
+        <Switch
+          value={detailed}
+          onChange={(e) => {
+            setDetailed(!detailed);
+          }}
+          label="Show Details"
+          sx={{
+            alignSelf: "flex-end",
+          }}
+        />
+        <Divider color="gray.1" sx={{ width: "100%" }} />
+        <Box sx={{ flex: 1, overflow: "auto", width: "100%" }}>
+          <Stack sx={{ width: "100%" }}>
+            {outputMessage
+              .filter((d) => {
+                return detailed ? d : d.type !== "detail";
+              })
+              .map((om, i) => (
+                <Group
+                  sx={{ width: "100%", height: "100%", overflow: "auto" }}
+                  position="apart"
+                  noWrap
+                  align="start"
+                  key={i}
+                >
+                  <Group>
+                    <Text
+                      weight={"bold"}
+                      align="right"
+                      sx={(theme) => ({
+                        backgroundColor: theme.colors.gray[1],
+                        opacity: 0.7,
+                        width: 80,
+                      })}
+                    >
+                      {i + 1}
+                    </Text>
+                    <Divider orientation="vertical" />
+                    <Text>{om.message}</Text>
+                  </Group>
+                  {om.type === "start" && (
+                    <Badge color={"green"}>Started</Badge>
+                  )}
+                  {om.type === "end" && <Badge color={"blue"}>End</Badge>}
+                  {om.type === "print" && <Badge color={"orange"}>Print</Badge>}
+                  {om.type === "detail" && (
+                    <Badge color={"indigo"}>Detail</Badge>
+                  )}
+                  {om.type === "error" && <Badge color={"red"}>Error</Badge>}
+                </Group>
+              ))}
+          </Stack>
+        </Box>
+      </Stack>
+
+      {/* <div className="output-title">
         <span className="flex items-center gap-x-4">
           Output {progress > 0 && progress < 100 && <div>{progress}%</div>}
           {status === "done" && (
@@ -269,8 +441,8 @@ const Output = () => {
               </div>
             );
           })}
-      </div>
-    </ResizableArea>
+      </div> */}
+    </Stack>
   );
 };
 

@@ -18,9 +18,9 @@ np.set_printoptions(suppress=True)
 args = json.load(open("python-runner/arguments.json"))
 
 
-datasets = args["datasets"]
-algorithms = args["algorithms"]
-normalizations = args["normalizations"]
+datasets = args["data"]
+algorithms = args["algo"]
+normalizations = args["norm"]
 
 
 loop = args["loop"]

@@ -4,12 +4,17 @@ import IndexPage from "../pages";
 import OutputPage from "../pages/output";
 import FlowBuilderPage from "../pages/flowBuilder";
 import Layout from "./Layout/index";
-import { MantineProvider } from "@mantine/core";
+import {
+  DEFAULT_THEME,
+  MantineProvider,
+  TypographyStylesProvider,
+} from "@mantine/core";
 import { NotificationsProvider } from "@mantine/notifications";
 import { ModalsProvider } from "@mantine/modals";
 import { useSelector } from "react-redux";
 import { ReactFlowProvider } from "reactflow";
 import Settings from "./sidebar/Settings";
+import Output from "./index/Output";
 
 const Router = () => {
   const theme = useSelector((state) => state.ui.theme);
@@ -53,6 +58,7 @@ const Router = () => {
                     element={<FlowBuilderPage />}
                     exact
                   />
+                  <Route path="/output" element={<Output />} exact />
                   <Route path="/settings" element={<Settings />} exact />
                 </Routes>
               </ModalsProvider>

@@ -21,46 +21,23 @@ import { AiOutlineSearch } from "react-icons/ai";
 import { RiArrowDropDownFill, RiArrowDropDownLine } from "react-icons/ri";
 import { FcInfo } from "react-icons/fc";
 
-import ReactFlow, {
-  Background,
-  Controls,
-  applyEdgeChanges,
-  applyNodeChanges,
-} from "reactflow";
 import PageBox from "../components/Layout/PageBox";
+import { useDispatch, useSelector } from "react-redux";
+import { setArguments } from "../redux/argumentSlice";
+import FlowCard from "../components/flowCard";
+import { BiPlay } from "react-icons/bi";
+import { Link } from "react-router-dom";
 
 const { ipcRenderer } = window.require("electron");
 
 const FlowBuilder = () => {
   const [data, setData] = useState([]);
 
-  const [nodes, setNodes] = useState([
-    {
-      id: "1",
-      position: { x: 0, y: 0 },
-      type: "input",
-      data: { label: "Datasets" },
-    },
-    {
-      id: "2",
-      position: { x: 100, y: 0 },
-    },
-  ]);
-  const [edges, setEdges] = useState([]);
-
   useEffect(() => {
     ipcRenderer.send("treeview-loaded");
     ipcRenderer.on("get-data", (e, eData) => {
       setData(eData);
     });
-  }, []);
-
-  const onNodesChange = useCallback((changes) => {
-    setNodes((nds) => applyNodeChanges(changes, nds));
-  }, []);
-
-  const onEdgesChange = useCallback((changes) => {
-    setNodes((eds) => applyEdgeChanges(changes, eds));
   }, []);
 
   return (
@@ -70,6 +47,8 @@ const FlowBuilder = () => {
       sx={{
         width: "100%",
         height: "100%",
+        maxHeight: "100%",
+        overflow: "hidden",
       }}
     >
       <Box sx={{ height: "100%", overflow: "hidden" }} component={PageBox}>
@@ -96,9 +75,49 @@ const FlowBuilder = () => {
           </Box>
         </Tabs>
       </Box>
-      <Box component={PageBox} sx={{ flex: 1, alignSelf: "stretch" }}>
-        a
-      </Box>
+      <Stack component={PageBox} sx={{ flex: 1, alignSelf: "stretch" }} p={10}>
+        <Box
+          px={5}
+          py={1}
+          mb={6}
+          sx={(theme) => ({
+            backgroundColor: theme.colors.gray[1],
+          })}
+        >
+          <Group position="apart">
+            <Text
+              size={"sm"}
+              sx={{
+                opacity: 0.7,
+              }}
+            >
+              Aksiyonlar
+            </Text>
+            <Group>
+              <Link to="/output">
+                <ActionIcon size="lg" color="green">
+                  <BiPlay />
+                </ActionIcon>
+              </Link>
+            </Group>
+          </Group>
+        </Box>
+        <Group
+          position="center"
+          spacing={10}
+          p={4}
+          align="stretch"
+          sx={{
+            boxSizing: "border-box",
+            flex: 1,
+            overflow: "auto",
+          }}
+        >
+          <FlowCard flowKey={"algo"} />
+          <FlowCard flowKey={"data"} />
+          <FlowCard flowKey={"norm"} />
+        </Group>
+      </Stack>
     </Group>
   );
 };
@@ -113,10 +132,10 @@ const FlowTabList = ({ data = [] }) => {
 
 const FlowTabPanel = ({ data = [] }) => {
   return data.map((d) => (
-    <Tabs.Panel value={d.fileType} className="h-full">
-      <Stack className="flex-1 h-full overflow-hidden">
-        <Input icon={<AiOutlineSearch />} placeholder="Search" />
-        <Box className="flex-1 h-full overflow-auto p-2">
+    <Tabs.Panel value={d.fileType} sx={{ height: "100%" }}>
+      <Stack sx={{ flex: 1, height: "100%", overflow: "hidden" }}>
+        {/* <Input icon={<AiOutlineSearch />} placeholder="Search" /> */}
+        <Box sx={{ flex: 1, height: "100%", overflow: "auto" }}>
           <FlowPanelContent data={d}>{d.label}</FlowPanelContent>
         </Box>
       </Stack>
@@ -128,6 +147,31 @@ const FlowPanelContent = ({ data = {}, showContent }) => {
   const [show, setShow] = useState(false);
 
   const [checked, setChecked] = useState(false);
+
+  const dispatch = useDispatch();
+
+  const selectedArguments = useSelector((state) => state.selectedArguments);
+
+  const handleSelect = (data) => {
+    let oldArguments = { ...selectedArguments };
+    const newArguments = { ...oldArguments };
+    const exist = oldArguments[data.fileType].some((d) => d.path === data.path);
+
+    if (exist) {
+      newArguments[data.fileType] = oldArguments[data.fileType].filter(
+        (d) => d.path !== data.path
+      );
+    } else {
+      newArguments[data.fileType] = [...oldArguments[data.fileType], data];
+    }
+    dispatch(setArguments(newArguments));
+  };
+
+  useEffect(() => {
+    setChecked(
+      selectedArguments[data.fileType].some((d) => d.path === data.path)
+    );
+  }, [selectedArguments]);
 
   const switchRef = useRef(null);
 
@@ -168,7 +212,7 @@ const FlowPanelContent = ({ data = {}, showContent }) => {
         spacing={20}
         noWrap
         onClick={() => {
-          setChecked(!checked);
+          handleSelect(data);
         }}
         p={8}
         sx={(theme) => ({
@@ -184,9 +228,6 @@ const FlowPanelContent = ({ data = {}, showContent }) => {
         <Group noWrap>
           <Switch
             checked={checked}
-            onChange={(e) => {
-              setChecked(e.currentTarget.checked);
-            }}
             sx={{ pointerEvents: "none" }}
             ref={switchRef}
           />

@@ -59,9 +59,10 @@ const Appbar = () => {
   return (
     <Box component={PageBox}>
       <Group position="apart" p={3}>
-        <Box>
+        <Group>
           <AppMenu target="Help" dropdown={appMenuDropdown} />
-        </Box>
+          <Box>a</Box>
+        </Group>
         <Button.Group>
           <MinimizeButton />
           <MaximizeButton />

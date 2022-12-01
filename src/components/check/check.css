@@ -8,7 +8,7 @@
 }
 
 .checks .check {
-  @apply justify-between  flex;
+  @apply justify-between  flex w-full;
 }
 
 .checks .check span {
