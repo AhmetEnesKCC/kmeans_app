@@ -10,7 +10,7 @@ import {
 } from "@mantine/core";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { setArguments } from "../../redux/argumentSlice";
+import { setArgumentByKey, setArguments } from "../../redux/argumentSlice";
 import { DiRasberryPi } from "react-icons/di";
 import { BiClipboard, BiTrash } from "react-icons/bi";
 import { FcInfo } from "react-icons/fc";
@@ -23,6 +23,12 @@ const FlowCard = ({ flowKey }) => {
     algo: "Algorithms",
     data: "Datasets",
     norm: "Normalizations",
+  };
+
+  const dispatch = useDispatch();
+
+  const handleClear = () => {
+    dispatch(setArgumentByKey({ key: flowKey, value: [] }));
   };
 
   return (
@@ -39,13 +45,30 @@ const FlowCard = ({ flowKey }) => {
           boxShadow: theme.shadows.md,
           backgroundColor: "white",
           borderWidth: 2,
+          borderStyle: "solid",
           height: "100%",
         })}
         p={2}
       >
-        <Text variant="h5" weight={"bold"} align="center" sx={(theme) => ({})}>
-          {labelChanger[flowKey]}
-        </Text>
+        <Group position="apart" px={2}>
+          <Text
+            variant="h5"
+            weight={"bold"}
+            align="center"
+            sx={(theme) => ({})}
+          >
+            {labelChanger[flowKey]}
+          </Text>
+          <Button
+            onClick={handleClear}
+            color={"red.5"}
+            variant="subtle"
+            px={2}
+            py={1}
+          >
+            Temizle
+          </Button>
+        </Group>
         <Stack
           sx={(theme) => ({
             overflow: "auto",

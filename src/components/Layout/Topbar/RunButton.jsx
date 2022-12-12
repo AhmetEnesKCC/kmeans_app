@@ -15,14 +15,8 @@ const RunButton = () => {
       variant="outline"
       color={"green"}
       onClick={() => {
-        const { algorithms, datasets, normalizations, loop } =
-          selectedArguments;
-        if (
-          algorithms.length > 0 &&
-          datasets.length > 0 &&
-          normalizations.length > 0 &&
-          loop > 0
-        ) {
+        const { algorithms, datasets, loop } = selectedArguments;
+        if (algorithms.length > 0 && datasets.length > 0 && loop > 0) {
           ipcRenderer.send("run", selectedArguments);
         }
         dispatch(setCodeStatus("pressed-run"));

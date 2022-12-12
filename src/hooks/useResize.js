@@ -28,7 +28,6 @@ const useResize = (
   useEffect(() => {
     const newSize =
       size + (rotation === "horizontal" ? resizeAmount.x : resizeAmount.y);
-    console.log(newSize);
     if (newSize <= maxSize && newSize >= minSize) {
       setSize(newSize);
     }

@@ -1,6 +1,6 @@
 {
   "name": "kmeans-app",
-  "version": "0.1.17",
+  "version": "0.2.0",
   "private": true,
   "main": "electron/main.js",
   "dependencies": {
@@ -10,6 +10,7 @@
     "@mantine/hooks": "^5.5.5",
     "@mantine/modals": "^5.5.5",
     "@mantine/notifications": "^5.5.5",
+    "@mantine/prism": "^5.9.2",
     "@reduxjs/toolkit": "^1.8.5",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^13.0.0",
@@ -25,6 +26,7 @@
     "postcss": "^8.4.19",
     "python-shell": "^3.0.1",
     "react": "^18.2.0",
+    "react-ace-editor": "^0.0.3",
     "react-dnd": "^16.0.1",
     "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^18.2.0",

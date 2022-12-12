@@ -6,7 +6,7 @@ import { openModal } from "@mantine/modals";
 import Check from "../../check";
 import About from "../../about";
 import Notes from "../../notes";
-import { Box, Button, Group } from "@mantine/core";
+import { Box, Button, Group, Text } from "@mantine/core";
 import PageBox from "../PageBox";
 
 const { ipcRenderer } = window.require("electron");
@@ -61,7 +61,9 @@ const Appbar = () => {
       <Group position="apart" p={3}>
         <Group>
           <AppMenu target="Help" dropdown={appMenuDropdown} />
-          <Box>a</Box>
+          <Box>
+            <Text>Kmeans GUI</Text>
+          </Box>
         </Group>
         <Button.Group>
           <MinimizeButton />

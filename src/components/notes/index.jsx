@@ -17,9 +17,17 @@ const Note = ({ version, texts }) => {
         return (
           <Stack align={"start"}>
             <Badge color={labelSwitch[t.label]}>{t.label}</Badge>
-            <List listStyleType="disc">
-              {t.lines.map((tl) => (
-                <List.Item>{tl}</List.Item>
+            <List listStyleType="disc" sx={{ rowGap: 20 }}>
+              {t.lines.map((tl, i) => (
+                <List.Item
+                  p={2}
+                  sx={{
+                    width: "90%",
+                    color: "#212121",
+                  }}
+                >
+                  <Text weight={i % 2 ? "bold" : "normal"}>{tl}</Text>
+                </List.Item>
               ))}
             </List>
           </Stack>
@@ -31,6 +39,36 @@ const Note = ({ version, texts }) => {
 
 const Notes = () => {
   const notes = [
+    {
+      version: "0.2.0",
+      texts: [
+        {
+          label: "feature",
+          lines: [
+            "Kullanıcı Arayüzü modernleştirildi. Aşina olunan tasarımsal trendler kullanıldı",
+            "Uygulama yapısı nerdeyse baştan tasarlanıldı.",
+            "Output: Sonuçları ve Seçilen Argümanları gösteren yeni sekmeler eklenildi",
+            "Normalization Seçmeyi zorunlu kılma devre dışı bırakıldı. Eğer hiç bir normalizasyon seçilmemişse uygulamanın sağlıklı bir şekilde çalışmaya devam etmesi sağlanıldı.",
+            "Yeni bir normalizasyon tipi uygulama içine gömülü dosyalarca düzenlenildi. Artık hiç bir normalizasyon olmadan da kmeansin çalışması desteklendi.",
+            "Sonunda sayı bulunan datasetler için bu sayı K olarak varsayılarak uygulama içi gömülü python kodlarında bu k nın kullanılması sağlanıldı. Eğer k belirtilmemişse 3 olacak şekilde ilerlemesi sağlanıldı",
+          ],
+        },
+        {
+          label: "next",
+          lines: [
+            "Her bir database için uygulama üzerinden k girilebilecek yeni bir ayar düşünülüyor.",
+            "UX geliştirmeleri yapılması planlanılıyor",
+          ],
+        },
+
+        {
+          label: "fix",
+          lines: [
+            "Uygulamanın dosyaları gömülü bir şekilde kullanmasına bağlı olarak python kodları immutable hale getirmesini sağlayan bir hata giderildi.",
+          ],
+        },
+      ],
+    },
     {
       version: "0.1.17",
       texts: [

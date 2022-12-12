@@ -26,6 +26,9 @@ const argumentSlice = createSlice({
     setArguments(state, action) {
       return action.payload;
     },
+    setArgumentByKey(state, action) {
+      return { ...state, [action.payload.key]: action.payload.value };
+    },
   },
 });
 
@@ -37,4 +40,5 @@ export const {
   setSelectedNormalizations,
   setLoop,
   setArguments,
+  setArgumentByKey,
 } = argumentSlice.actions;

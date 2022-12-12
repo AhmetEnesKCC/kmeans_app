@@ -14,28 +14,42 @@ import {
   UnstyledButton,
 } from "@mantine/core";
 
-import { useCallback, useRef } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-import { AiOutlineSearch } from "react-icons/ai";
-import { RiArrowDropDownFill, RiArrowDropDownLine } from "react-icons/ri";
 import { FcInfo } from "react-icons/fc";
+import { RiArrowDropDownLine, RiEyeLine } from "react-icons/ri";
 
 import PageBox from "../components/Layout/PageBox";
 import { useDispatch, useSelector } from "react-redux";
 import { setArguments } from "../redux/argumentSlice";
 import FlowCard from "../components/flowCard";
 import { BiPlay } from "react-icons/bi";
+import { AiOutlineReload } from "react-icons/ai";
 import { Link } from "react-router-dom";
+import { setLoading, setLoadingVisiblity } from "../redux/uiSlice";
+import { openModal } from "@mantine/modals";
+import FilePreview from "../components/FilePreview";
+import { useCallback } from "react";
 
 const { ipcRenderer } = window.require("electron");
 
 const FlowBuilder = () => {
   const [data, setData] = useState([]);
 
+  const dispatch = useDispatch();
+
   useEffect(() => {
-    ipcRenderer.send("treeview-loaded");
+    getFiles();
+    return () => {
+      setData([]);
+    };
+  }, []);
+
+  const getFiles = useCallback(() => {
+    ipcRenderer.send("read-files");
+    dispatch(setLoading({ visible: true, title: "Dosyalar Yükleniyor" }));
     ipcRenderer.on("get-data", (e, eData) => {
+      dispatch(setLoadingVisiblity(false));
       setData(eData);
     });
   }, []);
@@ -51,30 +65,44 @@ const FlowBuilder = () => {
         overflow: "hidden",
       }}
     >
-      <Box sx={{ height: "100%", overflow: "hidden" }} component={PageBox}>
-        <Tabs
-          defaultValue={"pop"}
-          component={Stack}
-          sx={{
-            height: "100%",
-            flex: 1,
-          }}
-          p={20}
-        >
-          <Tabs.List>
-            <FlowTabList data={data} />
-          </Tabs.List>
-          <Box
+      <Stack spacing={12} sx={{ height: "100%" }}>
+        <Box sx={{ height: "100%", overflow: "hidden" }} component={PageBox}>
+          <Tabs
             sx={{
-              overflow: "auto",
+              height: "100%",
               flex: 1,
             }}
-            p={6}
+            defaultValue={"algo"}
+            component={Stack}
+            p={20}
+            pt={2}
           >
-            <FlowTabPanel data={data} />
-          </Box>
-        </Tabs>
-      </Box>
+            <Tabs.List>
+              <FlowTabList data={data} />
+            </Tabs.List>
+            <Box
+              sx={{
+                overflow: "auto",
+                flex: 1,
+              }}
+              p={6}
+            >
+              <FlowTabPanel data={data} />
+            </Box>
+          </Tabs>
+        </Box>
+        <Group
+          position="center"
+          component={PageBox}
+          align="center"
+          sx={{ width: "100%" }}
+        >
+          <Text>Reload Files</Text>
+          <Button onClick={getFiles} variant="subtle">
+            <AiOutlineReload />
+          </Button>
+        </Group>
+      </Stack>
       <Stack component={PageBox} sx={{ flex: 1, alignSelf: "stretch" }} p={10}>
         <Box
           px={5}
@@ -231,6 +259,24 @@ const FlowPanelContent = ({ data = {}, showContent }) => {
             sx={{ pointerEvents: "none" }}
             ref={switchRef}
           />
+          {data.preview && (
+            <Tooltip label={"Preview File"}>
+              <ActionIcon
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openModal({
+                    title: "File Editor",
+                    children: <FilePreview file={data} />,
+                    overflow: "inside",
+                    size: "70%",
+                  });
+                }}
+              >
+                <RiEyeLine />
+              </ActionIcon>
+            </Tooltip>
+          )}
+
           <Tooltip label={data.ext}>
             <ActionIcon>
               <FcInfo />

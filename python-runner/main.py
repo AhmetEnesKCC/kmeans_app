@@ -10,6 +10,7 @@ import time
 import json
 import importlib.util
 from decimal import Decimal
+import re
 
 warnings.filterwarnings("ignore")
 np.set_printoptions(suppress=True)
@@ -64,17 +65,16 @@ dataFrames = []
 algorithmFunctions = []
 normalizationFunctions = []
 results = []
-
-for normalization in normalizations:
-    if normalization["label"] == "no":
-        normalizationFunctions.append(
+normalizationFunctions.append(
             {
-                "name": normalization["label"],
+                "name": 'No Normalization',
                 "type": "no",
                 "function": "none",
+                "labelWOExt" : "none",
             }
         )
-        continue
+for normalization in normalizations:
+    
     spec = importlib.util.spec_from_file_location(
         normalization["label"], normalization["path"]
     )
@@ -98,6 +98,11 @@ for dataset in datasets:
     dfs["name"] = dataset["name"]
     dfs["labelWOExt"] = dataset["labelWOExt"]
     dfs["dataframes"] = []
+    r = re.search('[0-9]+$', dfs["labelWOExt"])
+    k = 3
+    if r:
+        k = r.group()    
+    dfs["k"] = k
     for normalization in normalizationFunctions:
         if normalization["type"] == "function":
             df = normalization["function"](df)
@@ -128,6 +133,7 @@ for ds in dataFrames:
         for df in ds["dataframes"]:
             algorithm_name = al["name"]
             dataset_name = ds["name"]
+            dataset_k = ds["k"]
             normalization = df["normalization"]
             normalization_name = normalization["name"]
             dsResult["categories"].append(
@@ -143,7 +149,7 @@ for ds in dataFrames:
             result["dataset_name"] = dataset_name
             result["normalization_name"] = normalization_name
             for i in range(loop):
-                kmeans_result = kmeans(df["dataframe"], 3, al["function"])
+                kmeans_result = kmeans(df["dataframe"], dataset_k, al["function"])
                 sse = kmeans_result["sse"]
                 time_ = kmeans_result["time"]
                 total_time = kmeans_result["total-time"]

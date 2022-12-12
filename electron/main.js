@@ -1,4 +1,12 @@
-const { app, BrowserWindow, ipcMain, shell, dialog } = require("electron");
+const {
+  app,
+  BrowserWindow,
+  ipcMain,
+  shell,
+  dialog,
+  ipcRenderer,
+  globalShortcut,
+} = require("electron");
 const { nanoid } = require("@reduxjs/toolkit");
 const path = require("path");
 const {
@@ -10,6 +18,10 @@ const {
 } = require("fs");
 
 require("update-electron-app")();
+
+const Store = require("electron-store");
+
+const store = new Store();
 
 const { PythonShell } = require("python-shell");
 const { DateTime } = require("luxon");
@@ -46,6 +58,7 @@ let staticOptions = {
     nodeIntegration: true,
     enableRemoteModule: true,
     contextIsolation: false,
+    devTools: isDev,
   },
   frame: false,
 };
@@ -78,7 +91,9 @@ const createMainWindow = () => {
   mainWindow.loadURL(
     isDev ? "http://localhost:3000" : `file://${__dirname}/../build/index.html`
   );
-  isDev && mainWindow.webContents.openDevTools();
+  globalShortcut.register("CommandOrControl+R", () => {
+    console.log("CommandOrControl+R is pressed: Shortcut Disabled");
+  });
 };
 app.on("ready", () => {
   createMainWindow();
@@ -103,7 +118,7 @@ ipcMain.on("pin", (e, pin) => {
   }
 });
 
-const readFolders = async (basePath, folderName, fileType) => {
+const readFolders = async (basePath, folderName, fileType, preview) => {
   const folderPath = path.join(basePath, folderName);
   const folderContent = [];
   try {
@@ -135,6 +150,7 @@ const readFolders = async (basePath, folderName, fileType) => {
           folder: folderName,
           iteratable: false,
           type: "file",
+          preview: true,
           fileType,
           ext,
         });
@@ -152,11 +168,21 @@ const readFolders = async (basePath, folderName, fileType) => {
 
 var globalArgs = [];
 
-ipcMain.on("treeview-loaded", async () => {
+ipcMain.on("read-file", async (e, path) => {
+  try {
+    const fileData = readFileSync(path);
+    mainWindow.webContents.send("file-data", fileData.toString().trim());
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+ipcMain.on("read-files", async () => {
   const basePath = pythonRunnerLocation();
-  const algorithms = await readFolders(basePath, "algorithms", "algo");
-  const datasets = await readFolders(basePath, "datasets", "data");
-  const normalizations = await readFolders(basePath, "normalizations", "norm");
+  const app_settings = store.get("app-settings");
+  const algorithms = await readFolders(app_settings.algo, "", "algo", true);
+  const datasets = await readFolders(app_settings.data, "", "data", false);
+  const normalizations = await readFolders(app_settings.norm, "", "norm", true);
   const data_object = [
     {
       iteratable: true,
@@ -180,52 +206,14 @@ ipcMain.on("treeview-loaded", async () => {
   logToMain(data_object);
 
   mainWindow.webContents.send("get-data", data_object);
-
-  // if (algorithms.status !== "success" && datasets.status !== "success") {
-  //   return;
-  // }
-  // algorithms.message = algorithms.message
-  //   .filter((m) => /^algorithm/.test(m))
-  //   .map((al) => {
-  //     const isDisabled = disabledAlgorithms.find((d) => al.includes(d.pattern));
-  //     const algoProps = { file: al, label: convertHumanReadable(al) };
-  //     if (isDisabled) {
-  //       algoProps.disabled = {
-  //         reason: isDisabled.reason,
-  //       };
-  //     }
-  //     return algoProps;
-  //   });
-  // algorithms.disabledCount = algorithms.message.filter(
-  //   (al) => al.disabled
-  // ).length;
-  // datasets.message = datasets.message.map((ds) => {
-  //   return {
-  //     file: ds,
-  //     label: convertHumanReadable(ds),
-  //   };
-  // });
-  // normalizations.message = normalizations.message
-  //   .filter((m) => /norm.py$/.test(m))
-  //   .map((no) => {
-  //     return {
-  //       file: no,
-  //       label: convertHumanReadable(no),
-  //     };
-  //   });
-  // normalizations.message.unshift({
-  //   file: "no",
-  //   label: "none",
-  // });
-  // mainWindow?.webContents?.send?.("algorithms", algorithms);
-  // mainWindow?.webContents?.send?.("datasets", datasets);
-  // mainWindow?.webContents?.send?.("normalizations", normalizations);
 });
 
 class PythonRunner {
   shell = null;
   stopped = false;
   saveArguments(args) {
+    const loop = store.get("app-settings.loop");
+    args.loop = loop ?? args.loop;
     globalArgs = args;
     try {
       writeFileSync(
@@ -463,4 +451,14 @@ ipcMain.on("open:dialog:folder", (e, inputName) => {
         inputName,
       });
     });
+});
+
+ipcMain.on("get-app-settings", () => {
+  const settings = store.get("app-settings");
+  mainWindow.webContents.send("settings-send", settings);
+});
+
+ipcMain.on("save-storage", (e, { key, value }) => {
+  console.log(key);
+  store.set(key, value);
 });

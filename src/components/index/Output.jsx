@@ -2,6 +2,8 @@ import { useEffect } from "react";
 import { useRef } from "react";
 import { useState } from "react";
 import { IoIosArrowUp, IoMdClose } from "react-icons/io";
+import { BsTerminal, BsGraphUp } from "react-icons/bs";
+import { VscOutput } from "react-icons/vsc";
 import { useSelector } from "react-redux";
 
 import ResizableArea from "../ResizableArea";
@@ -10,15 +12,20 @@ import { red, white } from "tailwindcss/colors";
 import Chart from "./Chart";
 import { useCallback } from "react";
 import {
+  ActionIcon,
   Badge,
   Box,
   Button,
+  Code,
   Divider,
   Group,
+  MultiSelect,
   Stack,
   Switch,
   Text,
 } from "@mantine/core";
+import { AiOutlineReload, AiOutlineSolution } from "react-icons/ai";
+import { Prism } from "@mantine/prism";
 
 const { ipcRenderer } = window.require("electron");
 
@@ -35,17 +42,18 @@ const Output = () => {
 
   const codeStatus = useSelector((state) => state.codeStatus);
 
+  const [multiFilter, setMultiFilter] = useState([]);
+
   const outputRef = useRef(null);
 
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState(null);
 
   useEffect(() => {
-    console.log(selectedArguments);
     const multiplication =
       selectedArguments.data.length *
       selectedArguments.algo.length *
-      selectedArguments.norm.length *
+      (selectedArguments.norm.length + 1) *
       selectedArguments.loop;
     if (multiplication !== 0) {
       setProgress(
@@ -53,7 +61,7 @@ const Output = () => {
           (outputStep * 100) /
             (selectedArguments.data.length *
               selectedArguments.algo.length *
-              selectedArguments.norm.length *
+              (selectedArguments.norm.length + 1) *
               selectedArguments.loop)
         )
       );
@@ -67,7 +75,7 @@ const Output = () => {
   }, [codeStatus]);
 
   useEffect(() => {
-    if (progress === 100) {
+    if (progress >= 100) {
       setStatus("done");
     }
   }, [progress]);
@@ -119,8 +127,12 @@ const Output = () => {
     }
   }, [tab]);
 
-  useEffect(() => {
+  const runCode = useCallback(() => {
     ipcRenderer.send("run", selectedArguments);
+  }, []);
+
+  useEffect(() => {
+    runCode();
   }, []);
 
   const [maximize, setMaximize] = useState(false);
@@ -128,10 +140,6 @@ const Output = () => {
   const handleMaximize = useCallback(() => {
     setMaximize(!maximize);
   }, [maximize]);
-
-  // if (outputMessage.length === 0) {
-  //   return <></>;
-  // }
 
   return (
     <Stack
@@ -165,11 +173,85 @@ const Output = () => {
           ></Box>
         )}
       </Box>
-      <Group p={4}>
-        {status === "done" && <Badge color="green">Done</Badge>}
-        {status === "error" && <Badge color="red">Error</Badge>}
-        {status === null && <Badge color="orange">Processing</Badge>}
-        <Text weight="bold">{progress && progress + "%"}</Text>
+      <Group className="flex p-2 gap-x-2 output-tabs">
+        <div
+          onClick={() => {
+            setTab("terminal");
+          }}
+          className={tab === "terminal" && "selected"}
+        >
+          <Button
+            variant={tab === "terminal" ? "filled" : "outline"}
+            rightIcon={<BsTerminal />}
+            color={"green.6"}
+          >
+            Terminal
+          </Button>
+        </div>
+        {status === "done" && (
+          <>
+            <div
+              onClick={() => {
+                setTab("graph");
+              }}
+              className={tab === "graph" && "selected"}
+            >
+              <Button
+                variant={tab === "graph" ? "filled" : "outline"}
+                color={"orange.5"}
+                rightIcon={<BsGraphUp />}
+              >
+                Graph
+              </Button>
+            </div>
+            <div
+              onClick={() => {
+                setTab("result");
+              }}
+              className={tab === "result" && "selected"}
+            >
+              <Button
+                variant={tab === "result" ? "filled" : "outline"}
+                color={"violet.5"}
+                rightIcon={<AiOutlineSolution />}
+              >
+                Result
+              </Button>
+            </div>
+          </>
+        )}
+
+        <div
+          onClick={() => {
+            setTab("arguments");
+          }}
+          className={tab === "table" && "selected"}
+        >
+          <Button
+            variant={tab === "arguments" ? "filled" : "outline"}
+            rightIcon={<VscOutput />}
+            color={"blue.6"}
+          >
+            Arguments
+          </Button>
+        </div>
+      </Group>
+      <Group position="apart">
+        <Group p={4}>
+          {status === "done" && <Badge color="green">Done</Badge>}
+          {status === null && <Badge color="orange">Processing</Badge>}
+          {status === "error" && <Badge color="red">Error</Badge>}
+          <Text weight="bold">{progress && progress + "%"}</Text>
+        </Group>
+        {["done", "error"].includes(status) && (
+          <Button
+            onClick={runCode}
+            variant="subtle"
+            rightIcon={<AiOutlineReload />}
+          >
+            Aynı Argümanlarla Yeniden Çalıştır
+          </Button>
+        )}
       </Group>
 
       {tab === "graph" &&
@@ -208,11 +290,9 @@ const Output = () => {
             };
           };
           return (
-            <div className="flex flex-col">
-              <div className="font-bold text-opacity-80 bg-white text-black w-max px-3 rounded-md mb-4">
-                {r.labelWOExt}
-              </div>
-              <div className="grid grid-cols-2 gap-x-4 mb-10  p-3">
+            <Stack>
+              <Text>{r.labelWOExt}</Text>
+              <Group grow spacing={12}>
                 <Chart
                   title={"Time"}
                   chartOptions={createOptions("time", "time")}
@@ -221,75 +301,131 @@ const Output = () => {
                   title={"SSE"}
                   chartOptions={createOptions("sse", "sse")}
                 />
-              </div>
-            </div>
+              </Group>
+            </Stack>
           );
         })}
-      <Stack
-        sx={{
-          width: "100%",
-          height: "100%",
-          overflow: "hidden",
-        }}
-        align="start"
-        justify="flex-start"
-        spacing={10}
-        p={4}
-      >
-        <Switch
-          value={detailed}
-          onChange={(e) => {
-            setDetailed(!detailed);
-          }}
-          label="Show Details"
+      {tab === "terminal" && (
+        <Stack
           sx={{
-            alignSelf: "flex-end",
+            width: "100%",
+            height: "100%",
+            overflow: "hidden",
           }}
-        />
-        <Divider color="gray.1" sx={{ width: "100%" }} />
-        <Box sx={{ flex: 1, overflow: "auto", width: "100%" }}>
-          <Stack sx={{ width: "100%" }}>
-            {outputMessage
-              .filter((d) => {
-                return detailed ? d : d.type !== "detail";
-              })
-              .map((om, i) => (
-                <Group
-                  sx={{ width: "100%", height: "100%", overflow: "auto" }}
-                  position="apart"
-                  noWrap
-                  align="start"
-                  key={i}
-                >
-                  <Group>
-                    <Text
-                      weight={"bold"}
-                      align="right"
-                      sx={(theme) => ({
-                        backgroundColor: theme.colors.gray[1],
-                        opacity: 0.7,
-                        width: 80,
-                      })}
-                    >
-                      {i + 1}
-                    </Text>
-                    <Divider orientation="vertical" />
-                    <Text>{om.message}</Text>
+          align="start"
+          justify="flex-start"
+          spacing={10}
+          p={4}
+        >
+          <Switch
+            value={detailed}
+            onChange={(e) => {
+              setDetailed(!detailed);
+            }}
+            label="Show Details"
+            sx={{
+              alignSelf: "flex-end",
+            }}
+          />
+          <MultiSelect
+            label="Output Tipleri"
+            color="red"
+            onChange={(v) => {
+              setMultiFilter(v);
+            }}
+            data={[
+              {
+                label: "Error",
+                value: "error",
+              },
+              {
+                label: "Detail",
+                value: "detail",
+              },
+              {
+                label: "Print",
+                value: "print",
+              },
+              {
+                label: "End",
+                value: "end",
+              },
+              {
+                label: "Start",
+                value: "start",
+              },
+            ]}
+          />
+          <Divider color="gray.1" sx={{ width: "100%" }} />
+          <Box sx={{ flex: 1, overflow: "auto", width: "100%" }}>
+            <Stack sx={{ width: "100%" }}>
+              {outputMessage
+                .filter((d) =>
+                  multiFilter.length === 0 ? d : multiFilter.includes(d.type)
+                )
+                .filter((d) => {
+                  return detailed ? d : d.type !== "detail";
+                })
+                .map((om, i) => (
+                  <Group
+                    sx={{ width: "100%", height: "100%", overflow: "auto" }}
+                    position="apart"
+                    noWrap
+                    align="start"
+                    key={i}
+                  >
+                    <Group>
+                      <Text
+                        weight={"bold"}
+                        align="right"
+                        sx={(theme) => ({
+                          backgroundColor: theme.colors.gray[1],
+                          opacity: 0.7,
+                          width: 80,
+                        })}
+                      >
+                        {i + 1}
+                      </Text>
+                      <Divider orientation="vertical" />
+                      <Text>{om.message}</Text>
+                    </Group>
+                    {om.type === "start" && (
+                      <Badge color={"green"}>Started</Badge>
+                    )}
+                    {om.type === "end" && <Badge color={"blue"}>End</Badge>}
+                    {om.type === "print" && (
+                      <Badge color={"orange"}>Print</Badge>
+                    )}
+                    {om.type === "detail" && (
+                      <Badge color={"indigo"}>Detail</Badge>
+                    )}
+                    {om.type === "error" && <Badge color={"red"}>Error</Badge>}
                   </Group>
-                  {om.type === "start" && (
-                    <Badge color={"green"}>Started</Badge>
-                  )}
-                  {om.type === "end" && <Badge color={"blue"}>End</Badge>}
-                  {om.type === "print" && <Badge color={"orange"}>Print</Badge>}
-                  {om.type === "detail" && (
-                    <Badge color={"indigo"}>Detail</Badge>
-                  )}
-                  {om.type === "error" && <Badge color={"red"}>Error</Badge>}
-                </Group>
-              ))}
-          </Stack>
-        </Box>
-      </Stack>
+                ))}
+            </Stack>
+          </Box>
+        </Stack>
+      )}
+      {tab === "arguments" && (
+        <Prism
+          sx={{
+            overflow: "auto",
+          }}
+          language="json"
+        >
+          {JSON.stringify(selectedArguments, null, 4)}
+        </Prism>
+      )}
+      {tab === "result" && (
+        <Prism
+          sx={{
+            overflow: "auto",
+          }}
+          language="json"
+        >
+          {JSON.stringify(result, null, 4)}
+        </Prism>
+      )}
 
       {/* <div className="output-title">
         <span className="flex items-center gap-x-4">
@@ -320,34 +456,7 @@ const Output = () => {
             </div>
           )}
         </span>
-        {status === "done" && (
-          <div className="flex p-2 gap-x-2 output-tabs">
-            <div
-              onClick={() => {
-                setTab("terminal");
-              }}
-              className={tab === "terminal" && "selected"}
-            >
-              Terminal
-            </div>
-            <div
-              onClick={() => {
-                setTab("graph");
-              }}
-              className={tab === "graph" && "selected"}
-            >
-              Graph
-            </div>
-            <div
-              onClick={() => {
-                setTab("table");
-              }}
-              className={tab === "table" && "selected"}
-            >
-              Table
-            </div>
-          </div>
-        )}
+        
         <span className="flex gap-x-2">
           <IoIosArrowUp
             onClick={() => {

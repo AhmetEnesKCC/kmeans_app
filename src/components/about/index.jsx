@@ -21,7 +21,7 @@ const About = () => {
           position="apart"
         >
           <Text variant="h4" weight={"lighter"}>
-            v0.1.16
+            v0.2.0
           </Text>
           <Badge color={"orange"}>On Development</Badge>
         </Group>

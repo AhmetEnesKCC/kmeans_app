@@ -13,7 +13,7 @@ import { NotificationsProvider } from "@mantine/notifications";
 import { ModalsProvider } from "@mantine/modals";
 import { useSelector } from "react-redux";
 import { ReactFlowProvider } from "reactflow";
-import Settings from "./sidebar/Settings";
+import Settings from "../pages/settings";
 import Output from "./index/Output";
 
 const Router = () => {
