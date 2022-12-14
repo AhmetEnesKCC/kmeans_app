@@ -21,36 +21,36 @@ const Router = () => {
 
   return (
     <HashRouter>
-      <Layout>
-        <ReactFlowProvider>
-          <MantineProvider
-            theme={{
-              colorScheme: theme,
-              components: {
-                Text: {
-                  styles: (theme) => ({
-                    root: {
-                      color:
-                        theme.colorScheme === "dark"
-                          ? "white"
-                          : theme.colors.gray,
-                    },
-                  }),
-                },
-                Button: {
-                  styles: {
-                    root: {
-                      '&:not([type="submit"])': {
-                        width: "max-content",
-                      },
+      <ReactFlowProvider>
+        <MantineProvider
+          theme={{
+            colorScheme: theme,
+            components: {
+              Text: {
+                styles: (theme) => ({
+                  root: {
+                    color:
+                      theme.colorScheme === "dark"
+                        ? "white"
+                        : theme.colors.gray,
+                  },
+                }),
+              },
+              Button: {
+                styles: {
+                  root: {
+                    '&:not([type="submit"])': {
+                      width: "max-content",
                     },
                   },
                 },
               },
-            }}
-          >
-            <NotificationsProvider>
-              <ModalsProvider>
+            },
+          }}
+        >
+          <NotificationsProvider>
+            <ModalsProvider>
+              <Layout>
                 <Routes>
                   <Route path="/" element={<IndexPage />} exact />
                   <Route
@@ -61,11 +61,11 @@ const Router = () => {
                   <Route path="/output" element={<Output />} exact />
                   <Route path="/settings" element={<Settings />} exact />
                 </Routes>
-              </ModalsProvider>
-            </NotificationsProvider>
-          </MantineProvider>
-        </ReactFlowProvider>
-      </Layout>
+              </Layout>
+            </ModalsProvider>
+          </NotificationsProvider>
+        </MantineProvider>
+      </ReactFlowProvider>
     </HashRouter>
   );
 };

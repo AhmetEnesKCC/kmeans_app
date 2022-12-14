@@ -43,7 +43,6 @@ const FlowCard = ({ flowKey }) => {
         sx={(theme) => ({
           borderColor: theme.colors.blue[4],
           boxShadow: theme.shadows.md,
-          backgroundColor: "white",
           borderWidth: 2,
           borderStyle: "solid",
           height: "100%",

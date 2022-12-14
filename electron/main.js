@@ -39,6 +39,7 @@ const pythonRunnerLocation = () => {
 const isDev = require("electron-is-dev");
 const url = require("url");
 const { join } = require("path");
+const { download } = require("electron-dl");
 require("dotenv").config(__dirname);
 
 const disabledAlgorithms = [
@@ -180,9 +181,16 @@ ipcMain.on("read-file", async (e, path) => {
 ipcMain.on("read-files", async () => {
   const basePath = pythonRunnerLocation();
   const app_settings = store.get("app-settings");
-  const algorithms = await readFolders(app_settings.algo, "", "algo", true);
-  const datasets = await readFolders(app_settings.data, "", "data", false);
-  const normalizations = await readFolders(app_settings.norm, "", "norm", true);
+
+  const algorithms = app_settings?.algo
+    ? await readFolders(app_settings.algo, "", "algo", true)
+    : [];
+  const datasets = app_settings?.data
+    ? await readFolders(app_settings.data, "", "data", false)
+    : [];
+  const normalizations = app_settings?.norm
+    ? await readFolders(app_settings.norm, "", "norm", true)
+    : [];
   const data_object = [
     {
       iteratable: true,
@@ -450,6 +458,24 @@ ipcMain.on("open:dialog:folder", (e, inputName) => {
         result: res.filePaths[0],
         inputName,
       });
+    });
+});
+
+ipcMain.on("download-png", (e, dataURL) => {
+  dialog
+    .showOpenDialog(mainWindow, {
+      properties: ["openDirectory"],
+    })
+    .then((res) => {
+      if (res.canceled) {
+        return;
+      }
+      console.log(dataURL);
+      download(mainWindow, dataURL, {
+        directory: res.filePaths[0],
+      })
+        .catch(console.log)
+        .then((res) => console.log(res));
     });
 });
 

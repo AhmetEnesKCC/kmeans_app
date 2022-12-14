@@ -26,7 +26,7 @@ const About = () => {
           <Badge color={"orange"}>On Development</Badge>
         </Group>
         <Card.Section>
-          <Image height={240} alt="app icon" src={"/assets/icons/icon.png"} />
+          <Image height={240} alt="app icon" src={"./assets/icons/icon.png"} />
         </Card.Section>
         <Card.Section>
           <Text variant="p" sx={{ padding: 2 }}>

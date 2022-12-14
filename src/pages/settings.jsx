@@ -14,7 +14,7 @@ import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { setSettings } from "../redux/settingsSlice";
 import PageBox from "../components/Layout/PageBox";
-import { setLoop } from "../redux/argumentSlice";
+import { resetArguments, setArguments, setLoop } from "../redux/argumentSlice";
 
 const { ipcRenderer } = window.require("electron");
 
@@ -76,6 +76,7 @@ const Settings = () => {
             });
             return;
           }
+          dispatch(resetArguments());
           dispatch(setSettings(getValues()));
           dispatch(setLoop(localLoop));
           ipcRenderer.send("save-storage", {

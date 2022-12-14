@@ -26,7 +26,7 @@ const Sidebar = () => {
     <Navbar width={{ base: 80 }} sx={{ height: "100%" }}>
       <Link to={"/"}>
         <Center>
-          <Image src={"/assets/icons/icon.png"} width={80} />
+          <Image src={"./assets/icons/icon.png"} width={80} />
         </Center>
       </Link>
       <Stack sx={{ flex: 1, height: "100%" }} justify="space-between">

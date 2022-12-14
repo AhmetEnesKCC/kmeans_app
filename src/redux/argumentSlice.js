@@ -26,6 +26,9 @@ const argumentSlice = createSlice({
     setArguments(state, action) {
       return action.payload;
     },
+    resetArguments(state) {
+      return initialState;
+    },
     setArgumentByKey(state, action) {
       return { ...state, [action.payload.key]: action.payload.value };
     },
@@ -41,4 +44,5 @@ export const {
   setLoop,
   setArguments,
   setArgumentByKey,
+  resetArguments,
 } = argumentSlice.actions;

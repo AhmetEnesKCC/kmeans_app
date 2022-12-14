@@ -24,7 +24,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setArguments } from "../redux/argumentSlice";
 import FlowCard from "../components/flowCard";
 import { BiPlay } from "react-icons/bi";
-import { AiOutlineReload } from "react-icons/ai";
+import { AiOutlineArrowRight, AiOutlineReload } from "react-icons/ai";
 import { Link } from "react-router-dom";
 import { setLoading, setLoadingVisiblity } from "../redux/uiSlice";
 import { openModal } from "@mantine/modals";
@@ -50,6 +50,7 @@ const FlowBuilder = () => {
     dispatch(setLoading({ visible: true, title: "Dosyalar Yükleniyor" }));
     ipcRenderer.on("get-data", (e, eData) => {
       dispatch(setLoadingVisiblity(false));
+      console.log(eData);
       setData(eData);
     });
   }, []);
@@ -67,29 +68,42 @@ const FlowBuilder = () => {
     >
       <Stack spacing={12} sx={{ height: "100%" }}>
         <Box sx={{ height: "100%", overflow: "hidden" }} component={PageBox}>
-          <Tabs
-            sx={{
-              height: "100%",
-              flex: 1,
-            }}
-            defaultValue={"algo"}
-            component={Stack}
-            p={20}
-            pt={2}
-          >
-            <Tabs.List>
-              <FlowTabList data={data} />
-            </Tabs.List>
-            <Box
+          {data.every((d) => !d.content) ? (
+            <Stack px={20} align={"center"}>
+              <Text weight={"bold"} p={8}>
+                Ayarlardan Klasör Yollarını Seçmelisiniz
+              </Text>
+              <Link to={"/settings"}>
+                <Button rightIcon={<AiOutlineArrowRight />}>
+                  Ayarlara Git
+                </Button>
+              </Link>
+            </Stack>
+          ) : (
+            <Tabs
               sx={{
-                overflow: "auto",
+                height: "100%",
                 flex: 1,
               }}
-              p={6}
+              defaultValue={"algo"}
+              component={Stack}
+              p={20}
+              pt={2}
             >
-              <FlowTabPanel data={data} />
-            </Box>
-          </Tabs>
+              <Tabs.List>
+                <FlowTabList data={data} />
+              </Tabs.List>
+              <Box
+                sx={{
+                  overflow: "auto",
+                  flex: 1,
+                }}
+                p={6}
+              >
+                <FlowTabPanel data={data} />
+              </Box>
+            </Tabs>
+          )}
         </Box>
         <Group
           position="center"
@@ -109,7 +123,8 @@ const FlowBuilder = () => {
           py={1}
           mb={6}
           sx={(theme) => ({
-            backgroundColor: theme.colors.gray[1],
+            backgroundColor:
+              theme.colors.gray[theme.colorScheme === "dark" ? 7 : 1],
           })}
         >
           <Group position="apart">
@@ -151,24 +166,28 @@ const FlowBuilder = () => {
 };
 
 const FlowTabList = ({ data = [] }) => {
-  return data.map((d) => (
-    <Tabs.Tab key={data.fileType} value={d.fileType}>
-      {d.label}
-    </Tabs.Tab>
-  ));
+  return data
+    .filter((d) => d.content)
+    .map((d) => (
+      <Tabs.Tab key={data.fileType} value={d.fileType}>
+        {d.label}
+      </Tabs.Tab>
+    ));
 };
 
 const FlowTabPanel = ({ data = [] }) => {
-  return data.map((d) => (
-    <Tabs.Panel value={d.fileType} sx={{ height: "100%" }}>
-      <Stack sx={{ flex: 1, height: "100%", overflow: "hidden" }}>
-        {/* <Input icon={<AiOutlineSearch />} placeholder="Search" /> */}
-        <Box sx={{ flex: 1, height: "100%", overflow: "auto" }}>
-          <FlowPanelContent data={d}>{d.label}</FlowPanelContent>
-        </Box>
-      </Stack>
-    </Tabs.Panel>
-  ));
+  return data
+    .filter((d) => d.content)
+    .map((d) => (
+      <Tabs.Panel value={d.fileType} sx={{ height: "100%" }}>
+        <Stack sx={{ flex: 1, height: "100%", overflow: "hidden" }}>
+          {/* <Input icon={<AiOutlineSearch />} placeholder="Search" /> */}
+          <Box sx={{ flex: 1, height: "100%", overflow: "auto" }}>
+            <FlowPanelContent data={d}>{d.label}</FlowPanelContent>
+          </Box>
+        </Stack>
+      </Tabs.Panel>
+    ));
 };
 
 const FlowPanelContent = ({ data = {}, showContent }) => {

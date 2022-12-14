@@ -5,6 +5,13 @@ body {
   user-select: none;
 }
 
+pre,
+code,
+span,
+p {
+  user-select: text;
+}
+
 *,
 *:after,
 *:before {

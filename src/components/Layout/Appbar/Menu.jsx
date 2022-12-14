@@ -1,4 +1,11 @@
-const { Menu, Text, createStyles, Button } = require("@mantine/core");
+const {
+  Menu,
+  Text,
+  createStyles,
+  Button,
+  Switch,
+  Group,
+} = require("@mantine/core");
 
 const BarMenu = ({ target, dropdown = [] }) => {
   const styles = createStyles({
@@ -12,7 +19,11 @@ const BarMenu = ({ target, dropdown = [] }) => {
   const { classes } = styles();
 
   return (
-    <Menu sx={{ "-webkit-app-region": "no-drag" }} classNames={classes}>
+    <Menu
+      closeOnItemClick={false}
+      sx={{ "-webkit-app-region": "no-drag" }}
+      classNames={classes}
+    >
       <Menu.Target>
         <Button variant="outline" className={classes.target}>
           <Text>{target}</Text>
@@ -28,6 +39,7 @@ const BarMenu = ({ target, dropdown = [] }) => {
             </Menu.Item>
           )
         )}
+        <Menu.Divider />
       </Menu.Dropdown>
     </Menu>
   );
