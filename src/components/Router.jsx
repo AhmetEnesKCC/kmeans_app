@@ -9,7 +9,10 @@ import {
   MantineProvider,
   TypographyStylesProvider,
 } from "@mantine/core";
-import { NotificationsProvider } from "@mantine/notifications";
+import {
+  NotificationsProvider,
+  useNotifications,
+} from "@mantine/notifications";
 import { ModalsProvider } from "@mantine/modals";
 import { useSelector } from "react-redux";
 import { ReactFlowProvider } from "reactflow";
@@ -48,7 +51,7 @@ const Router = () => {
             },
           }}
         >
-          <NotificationsProvider>
+          <NotificationsProvider limit={1}>
             <ModalsProvider>
               <Layout>
                 <Routes>

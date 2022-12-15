@@ -1,5 +1,6 @@
 import {
   ActionIcon,
+  Badge,
   Box,
   Button,
   Grid,
@@ -30,6 +31,7 @@ import { setLoading, setLoadingVisiblity } from "../redux/uiSlice";
 import { openModal } from "@mantine/modals";
 import FilePreview from "../components/FilePreview";
 import { useCallback } from "react";
+import { showNotification } from "@mantine/notifications";
 
 const { ipcRenderer } = window.require("electron");
 
@@ -50,6 +52,16 @@ const FlowBuilder = () => {
     dispatch(setLoading({ visible: true, title: "Dosyalar Yükleniyor" }));
     ipcRenderer.on("get-data", (e, eData) => {
       dispatch(setLoadingVisiblity(false));
+      eData.map((d) => {
+        if (d.status === "error") {
+          showNotification({
+            message: "Klasör Okunamadı: " + d.label,
+          });
+          d.content = [];
+          d.error = true;
+        }
+        return d;
+      });
       console.log(eData);
       setData(eData);
     });
@@ -232,6 +244,11 @@ const FlowPanelContent = ({ data = {}, showContent }) => {
           p={2}
         >
           <Group position="apart">
+            {data.error && (
+              <Tooltip label="Klasör okunamadı. Klasörün mevcut olduğundan emin olun">
+                <Badge color={"red"}>Error</Badge>
+              </Tooltip>
+            )}
             <Text>{data.label}</Text>
             <Box
               sx={(theme) => ({

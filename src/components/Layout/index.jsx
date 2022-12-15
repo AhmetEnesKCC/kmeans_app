@@ -22,6 +22,13 @@ import Loading from "./Loading";
 import { FaArrowLeft, FaBackward } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 import { setLoop } from "../../redux/argumentSlice";
+import {
+  useNotifications,
+  cleanNotificationsQueue,
+  cleanNotifications,
+  showNotification,
+} from "@mantine/notifications";
+
 const { ipcRenderer } = window.require("electron");
 
 const Layout = ({ children }) => {
@@ -37,7 +44,19 @@ const Layout = ({ children }) => {
     ipcRenderer.on("settings-send", (e, settings) => {
       dispatch(setLoop(settings?.loop ?? 100));
     });
+    ipcRenderer.on("download:successful", () => {
+      showNotification({
+        color: "green",
+        message: "İndirme Başarılı",
+      });
+    });
   }, []);
+
+  const { notifications } = useNotifications();
+
+  useEffect(() => {
+    cleanNotificationsQueue();
+  }, [notifications]);
 
   // const showSummary = useSelector((state) => state.showSummary);
   return (

@@ -40,6 +40,29 @@ const Note = ({ version, texts }) => {
 const Notes = () => {
   const notes = [
     {
+      version: "0.2.1",
+      texts: [
+        {
+          label: "feature",
+          lines: ["Tablolar için görsel düzenleme yapıldı."],
+        },
+        {
+          label: "next",
+          lines: [
+            "Uygulama içine gömülü olan main.py dosyasının bir kopyasının düzenlenilip deneysel olarak kullanılabilmesi sağlanılması planlanıyor. DUE: 20.12.2022",
+          ],
+        },
+
+        {
+          label: "fix",
+          lines: [
+            "Daha önce uygulamanın ayarlar bölümünden seçilen bir klasör okunamamışsa (file system hatası) uygulamanın crash vermesine sebep olan bir hata giderildi.",
+            "Minör optimizasyonlar",
+          ],
+        },
+      ],
+    },
+    {
       version: "0.2.0",
       texts: [
         {

@@ -191,6 +191,7 @@ ipcMain.on("read-files", async () => {
   const normalizations = app_settings?.norm
     ? await readFolders(app_settings.norm, "", "norm", true)
     : [];
+
   const data_object = [
     {
       iteratable: true,
@@ -470,12 +471,13 @@ ipcMain.on("download-png", (e, dataURL) => {
       if (res.canceled) {
         return;
       }
-      console.log(dataURL);
       download(mainWindow, dataURL, {
         directory: res.filePaths[0],
       })
         .catch(console.log)
-        .then((res) => console.log(res));
+        .then((res) => {
+          mainWindow.webContents.send("download:successful");
+        });
     });
 });
 

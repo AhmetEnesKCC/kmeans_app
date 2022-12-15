@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useRef } from "react";
 import { useState } from "react";
 import { IoIosArrowUp, IoMdClose } from "react-icons/io";
-import { BsTerminal, BsGraphUp } from "react-icons/bs";
+import { BsTerminal, BsGraphUp, BsDownload } from "react-icons/bs";
 import { VscOutput } from "react-icons/vsc";
 import { useSelector } from "react-redux";
 
@@ -343,11 +343,17 @@ const Output = () => {
             overflow: "auto",
           }}
         >
-          <Button onClick={downloadAsPng}>Download As PNG</Button>
+          <Button
+            variant="subtle"
+            rightIcon={<BsDownload />}
+            onClick={downloadAsPng}
+          >
+            Download As PNG
+          </Button>
           <Group
             spacing={12}
             p={3}
-            align={"start"}
+            align={"end"}
             sx={{
               width: "max-content",
               height: "max-content",
@@ -360,8 +366,7 @@ const Output = () => {
               align={"start"}
               justify="end"
               sx={{
-                msJustifySelf: "end",
-                height: height + 8,
+                justifySelf: "end",
               }}
             >
               {selectedArguments.data.map((d, i) => (
@@ -391,75 +396,71 @@ const Output = () => {
                 </>
               ))}
             </Stack>
+            <Divider color={"blue"} orientation="vertical" />
             {selectedArguments.algo.map((algo) => {
               return (
-                <Stack
-                  p={8}
-                  sx={(theme) => ({
-                    boxShadow: theme.shadows.md,
-                    border: "#d3d3d3 2px solid",
-                  })}
-                  ref={GridRef}
-                  align={"stretch"}
-                >
-                  <Text
-                    weight={"bold"}
-                    sx={(theme) => ({
-                      color: theme.colors.blue[5],
-                    })}
-                    align="center"
-                    transform="capitalize"
-                  >
-                    {algo.labelWOExt}
-                  </Text>
-                  <Group noWrap>
-                    <Stack>
-                      <Text sx={{ flex: 1 }} align="center" weight={"bold"}>
-                        SSE
-                      </Text>
-                      {selectedArguments.data.map((d) => (
-                        <Text
-                          sx={{
-                            lineHeight: "24px",
-                          }}
-                        >
-                          {
-                            result
-                              .find((r) => r.label === d.label)
-                              ?.data?.find(
-                                (r) =>
-                                  r.dataset_name === d.name &&
-                                  r.algorithm_name === algo.label
-                              )?.sse
-                          }
+                <>
+                  <Stack ref={GridRef} align={"stretch"}>
+                    <Text
+                      weight={"bold"}
+                      sx={(theme) => ({
+                        color: theme.colors.blue[5],
+                      })}
+                      align="center"
+                      transform="capitalize"
+                    >
+                      {algo.labelWOExt}
+                    </Text>
+                    <Group noWrap>
+                      <Stack>
+                        <Text sx={{ flex: 1 }} align="center" weight={"bold"}>
+                          SSE
                         </Text>
-                      ))}
-                    </Stack>
-                    <Divider orientation="vertical" color="blue.5" />
-                    <Stack>
-                      <Text sx={{ flex: 1 }} align="center" weight={"bold"}>
-                        TIME
-                      </Text>
-                      {selectedArguments.data.map((d) => (
-                        <Text
-                          sx={{
-                            lineHeight: "24px",
-                          }}
-                        >
-                          {
-                            result
-                              .find((r) => r.label === d.label)
-                              ?.data?.find(
-                                (r) =>
-                                  r.dataset_name === d.name &&
-                                  r.algorithm_name === algo.label
-                              )?.time
-                          }
+                        {selectedArguments.data.map((d) => (
+                          <Text
+                            sx={{
+                              lineHeight: "24px",
+                            }}
+                          >
+                            {
+                              result
+                                .find((r) => r.label === d.label)
+                                ?.data?.find(
+                                  (r) =>
+                                    r.dataset_name === d.name &&
+                                    r.algorithm_name === algo.label
+                                )?.sse
+                            }
+                          </Text>
+                        ))}
+                      </Stack>
+                      <Divider orientation="vertical" color="blue.5" />
+                      <Stack>
+                        <Text sx={{ flex: 1 }} align="center" weight={"bold"}>
+                          TIME
                         </Text>
-                      ))}
-                    </Stack>
-                  </Group>
-                </Stack>
+                        {selectedArguments.data.map((d) => (
+                          <Text
+                            sx={{
+                              lineHeight: "24px",
+                            }}
+                          >
+                            {
+                              result
+                                .find((r) => r.label === d.label)
+                                ?.data?.find(
+                                  (r) =>
+                                    r.dataset_name === d.name &&
+                                    r.algorithm_name === algo.label
+                                )?.time
+                            }
+                          </Text>
+                        ))}
+                      </Stack>
+                    </Group>
+                  </Stack>
+                  <Divider color={"blue"} orientation="vertical" />
+                </>
               );
             })}
           </Group>
