@@ -52,6 +52,7 @@ const FlowBuilder = () => {
     dispatch(setLoading({ visible: true, title: "Dosyalar Yükleniyor" }));
     ipcRenderer.on("get-data", (e, eData) => {
       dispatch(setLoadingVisiblity(false));
+      console.log(eData);
       eData.map((d) => {
         if (d.status === "error") {
           showNotification({
@@ -62,7 +63,6 @@ const FlowBuilder = () => {
         }
         return d;
       });
-      console.log(eData);
       setData(eData);
     });
   }, []);
@@ -170,7 +170,6 @@ const FlowBuilder = () => {
         >
           <FlowCard flowKey={"algo"} />
           <FlowCard flowKey={"data"} />
-          <FlowCard flowKey={"norm"} />
         </Group>
       </Stack>
     </Group>
@@ -232,6 +231,32 @@ const FlowPanelContent = ({ data = {}, showContent }) => {
     );
   }, [selectedArguments]);
 
+  const isAllChecked = useCallback(() => {
+    const selecteds = selectedArguments[data.fileType];
+    const filteredData = data.content.filter((d) => !d.iteratable);
+    return (
+      filteredData.every((s) => selecteds.includes(s)) &&
+      filteredData.length > 0
+    );
+  }, [selectedArguments[data.fileType]]);
+
+  const handleSelectAll = useCallback(() => {
+    const allChecked = isAllChecked();
+    const newArguments = { ...selectedArguments };
+    if (allChecked) {
+      newArguments[data.fileType] = selectedArguments[data.fileType].filter(
+        (ar) => !data.content.includes(ar)
+      );
+    } else {
+      newArguments[data.fileType] = [
+        ...newArguments[data.fileType],
+        ...data.content.filter((d) => !d.iteratable),
+      ];
+    }
+    console.log(newArguments);
+    dispatch(setArguments(newArguments));
+  }, [selectedArguments[data.fileType]]);
+
   const switchRef = useRef(null);
 
   if (data.iteratable) {
@@ -249,7 +274,12 @@ const FlowPanelContent = ({ data = {}, showContent }) => {
                 <Badge color={"red"}>Error</Badge>
               </Tooltip>
             )}
-            <Text>{data.label}</Text>
+            <Group>
+              <Text>{data.label}</Text>
+              {data.content.some((d) => !d.iteratable) && (
+                <Switch onClick={handleSelectAll} checked={isAllChecked()} />
+              )}
+            </Group>
             <Box
               sx={(theme) => ({
                 transform: "rotate(" + (show ? 180 : 0) + "deg)",

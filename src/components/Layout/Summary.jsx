@@ -1,7 +1,7 @@
 import { useSelector } from "react-redux";
 
 const Summary = ({ children }) => {
-  const { algorithms, datasets, normalizations, loop } = useSelector(
+  const { algorithms, datasets, loop } = useSelector(
     (state) => state.selectedArguments
   );
 
@@ -11,8 +11,7 @@ const Summary = ({ children }) => {
       <Summary.List data={algorithms} />
       <Summary.Title>datasets</Summary.Title>
       <Summary.List data={datasets} />
-      <Summary.Title>normalizations</Summary.Title>
-      <Summary.List data={normalizations} />
+
       <Summary.Title>loop</Summary.Title>
       <Summary.List data={loop} />
     </div>

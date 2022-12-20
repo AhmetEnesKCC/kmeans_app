@@ -1,61 +1,21 @@
 import React, { useEffect, useState } from "react";
-import { useDrop } from "react-dnd";
-import DragArea from "../components/index/DragArea";
-import ContentInfo from "../components/index/ContentInfo";
 
 import { useDispatch, useSelector } from "react-redux";
-import Output from "../components/index/Output";
-import {
-  setSelectedAlgos,
-  setSelectedDatasets,
-  setSelectedNormalizations,
-} from "../redux/argumentSlice";
-import { RiRouteLine } from "react-icons/ri";
-import { AiFillDatabase, AiOutlineCode } from "react-icons/ai";
-import { TiWaves } from "react-icons/ti";
-import { showNotification } from "@mantine/notifications";
-import { Badge, Box, Group, List, Stack, Table, Text } from "@mantine/core";
+
+import { Badge, Group, Stack, Table, Text } from "@mantine/core";
 import PageBox from "../components/Layout/PageBox";
 import { FaProjectDiagram } from "react-icons/fa";
 import { FiSettings } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
+import { AiOutlineCode } from "react-icons/ai";
 const { ipcRenderer } = window.require("electron");
 
 const IndexPage = () => {
-  const dispatch = useDispatch();
-
-  const [data, setData] = useState([]);
-
   useEffect(() => {
     ipcRenderer.on("log-from-main", (e, data) => {
       console.log(data);
     });
   }, []);
-  const codeStatus = useSelector((state) => state.codeStatus);
-  const selectedArguments = useSelector((state) => state.selectedArguments);
-
-  const isValid = (obj, keys) => {
-    let result = true;
-    keys.map((key) => {
-      if (obj[key].length === 0) {
-        result = false;
-      }
-      return true;
-    });
-    return result;
-  };
-
-  // useEffect(() => {
-  //   if (
-  //     codeStatus === "pressed-run" &&
-  //     !isValid(selectedArguments, ["algorithms", "normalizations", "datasets"])
-  //   )
-  //     showNotification({
-  //       message:
-  //         "You need to select at least 1 algorithm, 1 dataset and 1 normalization technique. Forcing to add a normalization technique will be removed in the one of the next updates.",
-  //       color: "red",
-  //     });
-  // }, [codeStatus, selectedArguments]);
 
   const keyChanger = {
     word: "Kavram",
@@ -111,12 +71,13 @@ const IndexPage = () => {
           />
           <SuperBox
             title={"Kod Düzenle"}
-            soon
             icon={<AiOutlineCode size={20} />}
             color="orange"
             hoverColorIndex={5}
             colorIndex={6}
             text={"white"}
+            to="/edit-code"
+            soon
           />
         </Group>
       </Stack>

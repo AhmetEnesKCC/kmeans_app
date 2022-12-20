@@ -1,6 +1,6 @@
 {
   "name": "kmeans-app",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "private": true,
   "main": "electron/main.js",
   "dependencies": {
@@ -48,6 +48,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "electron:build": "electron-builder -c.extraMetadata.main=electron/main.js",
+    "electron:build:win": "electron-builder -c.extraMetadata.main=electron/main.js --win",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "electron": "electron .",

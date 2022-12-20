@@ -37,15 +37,9 @@ const pythonRunnerLocation = () => {
 };
 
 const isDev = require("electron-is-dev");
-const url = require("url");
 const { join } = require("path");
 const { download } = require("electron-dl");
 require("dotenv").config(__dirname);
-
-const disabledAlgorithms = [
-  { pattern: "near", reason: "Euclid error" },
-  { pattern: "minmax", reason: "Funcion Error" },
-];
 
 let pinWindow;
 let checkWindow;
@@ -68,21 +62,6 @@ const logToMain = (logObject) => {
   mainWindow.webContents.send("log-from-main", logObject);
 };
 
-const staticFilePath = (fileName) => {
-  return path.resolve(public_path, fileName);
-};
-
-const createCheckWindow = () => {
-  const checkWindowOptions = {
-    ...staticOptions,
-    width: 400,
-    height: 300,
-    resizable: false,
-  };
-  checkWindow = new BrowserWindow(checkWindowOptions);
-  checkWindow.loadURL("http://localhost:3000/check");
-};
-
 const createMainWindow = () => {
   const mainWindowOptions = {
     ...staticOptions,
@@ -100,16 +79,6 @@ app.on("ready", () => {
   createMainWindow();
 });
 
-const createOutputWindow = () => {
-  const outputWindowOptions = {
-    alwaysOnTop: true,
-    ...staticOptions,
-  };
-
-  outputWindow = new BrowserWindow(outputWindowOptions);
-  outputWindow.loadURL(path.join(__dirname, "build", "index.html"));
-};
-
 ipcMain.on("pin", (e, pin) => {
   if (pin === process.env["pin"]) {
     createMainWindow();
@@ -123,26 +92,28 @@ const readFolders = async (basePath, folderName, fileType, preview) => {
   const folderPath = path.join(basePath, folderName);
   const folderContent = [];
   try {
-    const content = await readdirSync(folderPath);
+    const content = readdirSync(folderPath);
+
     content.forEach(async (co) => {
-      if (co === "__pycache__") {
+      if (co === "__pycache__" || co === ".DS_Store") {
         return;
       }
       const contentPath = path.join(folderPath, co);
       const contentStat = statSync(contentPath);
       if (contentStat.isDirectory()) {
-        const subDirContent = await readFolders(folderPath, co, fileType);
-        folderContent.push({
-          label: co,
-          name: co,
-          path: contentPath,
-          type: "folder",
-          iteratable: true,
-          fileType,
-          ...subDirContent,
+        await readFolders(folderPath, co, fileType).then((value) => {
+          folderContent.push({
+            label: co,
+            name: co,
+            path: contentPath,
+            type: "folder",
+            iteratable: true,
+            fileType,
+            ...value,
+          });
         });
       } else {
-        const ext = co.match(/\.[0-9a-z]+$/i)[0].replace(".", "");
+        const ext = co?.match?.(/\.[0-9a-z]+$/i)?.[0].replace(".", "");
         folderContent.push({
           label: convertHumanReadable(co) + "." + ext,
           labelWOExt: convertHumanReadable(co),
@@ -179,7 +150,6 @@ ipcMain.on("read-file", async (e, path) => {
 });
 
 ipcMain.on("read-files", async () => {
-  const basePath = pythonRunnerLocation();
   const app_settings = store.get("app-settings");
 
   const algorithms = app_settings?.algo
@@ -188,9 +158,8 @@ ipcMain.on("read-files", async () => {
   const datasets = app_settings?.data
     ? await readFolders(app_settings.data, "", "data", false)
     : [];
-  const normalizations = app_settings?.norm
-    ? await readFolders(app_settings.norm, "", "norm", true)
-    : [];
+
+  logToMain(datasets);
 
   const data_object = [
     {
@@ -204,12 +173,6 @@ ipcMain.on("read-files", async () => {
       ...datasets,
       label: "Datasets",
       fileType: "data",
-    },
-    {
-      iteratable: true,
-      ...normalizations,
-      label: "Normalizations",
-      fileType: "norm",
     },
   ];
   logToMain(data_object);

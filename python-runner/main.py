@@ -14,6 +14,16 @@ from decimal import Decimal
 import re
 import traceback
 
+# embedded normalization function
+def normalization(ds):
+
+    copy_ds = ds.copy()
+    for feature in range(copy_ds.shape[1]):
+        m = np.absolute(np.max(copy_ds[:, feature]))
+        copy_ds[:, feature] = copy_ds[:, feature] / m
+        # print(f"Range of feature {feature+1} = {np.ptp(copy_ds[:,feature])}")
+    return copy_ds
+
 try:
 
     warnings.filterwarnings("ignore")
@@ -23,7 +33,6 @@ try:
 
     datasets = args["data"]
     algorithms = args["algo"]
-    normalizations = args["norm"]
 
     loop = args["loop"]
 
@@ -63,35 +72,9 @@ try:
 
     dataFrames = []
     algorithmFunctions = []
-    normalizationFunctions = []
     results = []
 
-    for normalization in normalizations:
-
-        spec = importlib.util.spec_from_file_location(
-            normalization["label"], normalization["path"]
-        )
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        normalizationFunction = module.normalization
-        normalizationFunctions.append(
-            {
-                "name": normalization["label"],
-                "labelWOExt": normalization["labelWOExt"],
-                "type": "function",
-                "function": normalizationFunction,
-            }
-        )
-    normalizationFunctions.append(
-        {
-            "name": "No Normalization",
-            "type": "no",
-            "function": "none",
-            "labelWOExt": "none",
-        }
-    )
     for dataset in datasets:
-
         df = pd.read_csv(dataset["path"], sep="\s+|\t|;|,")
         df = df.astype(float)
         df = df.to_numpy()
@@ -100,17 +83,12 @@ try:
         dfs["labelWOExt"] = dataset["labelWOExt"]
         dfs["label"] = dataset["label"]
         dfs["name"] = dataset["name"]
-        dfs["dataframes"] = []
+        dfs["dataframe"] = normalization(df)
         r = re.search("([1-9][0-9]{0,5})$", dfs["labelWOExt"])
-        k = 3
+        k = 3 
         if r:
-            k = r.group()
-
-        dfs["k"] = k
-        for normalization in normalizationFunctions:
-            if normalization["type"] == "function":
-                df = normalization["function"](df)
-            dfs["dataframes"].append({"dataframe": df, "normalization": normalization})
+            k = int(r.group())
+        dfs["k"] = k        
         dataFrames.append(dfs)
 
     for algorithm in algorithms:
@@ -138,44 +116,41 @@ try:
         dsResult["name"] = ds["name"]
 
         for al in algorithmFunctions:
-            for df in ds["dataframes"]:
-                algorithm_name = al["name"]
-                dataset_name = ds["name"]
-                dataset_k = ds["k"]
-                normalization = df["normalization"]
-                normalization_name = normalization["name"]
-                dsResult["categories"].append(
-                    al["labelWOExt"] + "-" + normalization["labelWOExt"]
+            df = ds["dataframe"]
+            algorithm_name = al["name"]
+            dataset_name = ds["name"]
+            dataset_k = ds["k"]
+            dsResult["categories"].append(
+                al["labelWOExt"]
+            )
+            result = {
+                "sse": 0,
+                "iter": 0,
+                "time": 0,
+                "total-time": 0,
+            }
+            result["algorithm_name"] = algorithm_name
+            result["dataset_name"] = dataset_name
+            for i in range(loop):
+                kmeans_result = kmeans(df, dataset_k, al["function"])
+                sse = kmeans_result["sse"]
+                time_ = kmeans_result["time"]
+                total_time = kmeans_result["total-time"]
+                iters = kmeans_result["iter"]
+                result["sse"] += sse
+                result["time"] += time_
+                result["total-time"] += total_time
+                result["iter"] += iters
+                print(
+                    f"-step- {algorithm_name} run with dataset: {dataset_name} for {i + 1} times."
                 )
-                result = {
-                    "sse": 0,
-                    "iter": 0,
-                    "time": 0,
-                    "total-time": 0,
-                }
-                result["algorithm_name"] = algorithm_name
-                result["dataset_name"] = dataset_name
-                result["normalization_name"] = normalization_name
-                for i in range(loop):
-                    kmeans_result = kmeans(df["dataframe"], dataset_k, al["function"])
-                    sse = kmeans_result["sse"]
-                    time_ = kmeans_result["time"]
-                    total_time = kmeans_result["total-time"]
-                    iters = kmeans_result["iter"]
-                    result["sse"] += sse
-                    result["time"] += time_
-                    result["total-time"] += total_time
-                    result["iter"] += iters
-                    print(
-                        f"-step- {algorithm_name} run with dataset: {dataset_name} by normalization: {normalization_name} for {i + 1} times."
-                    )
-                result["sse"] /= loop
-                result["time"] /= loop
-                result["total-time"] /= loop
-                result["iter"] /= loop
-                dsResult["data"].append(result)
-                dsResult["series"]["sse"].append(result["sse"])
-                dsResult["series"]["time"].append(result["time"])
+            result["sse"] /= loop
+            result["time"] /= loop
+            result["total-time"] /= loop
+            result["iter"] /= loop
+            dsResult["data"].append(result)
+            dsResult["series"]["sse"].append(result["sse"])
+            dsResult["series"]["time"].append(result["time"])
         results.append(dsResult)
     writeToResult(results)
 

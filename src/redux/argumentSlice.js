@@ -3,7 +3,6 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
   algo: [],
   data: [],
-  norm: [],
   loop: 100,
 };
 
@@ -16,9 +15,6 @@ const argumentSlice = createSlice({
     },
     setSelectedDatasets(state, action) {
       state.data = action.payload;
-    },
-    setSelectedNormalizations(state, action) {
-      state.norm = action.payload;
     },
     setLoop(state, action) {
       state.loop = action.payload;
@@ -40,7 +36,6 @@ export default argumentSlice.reducer;
 export const {
   setSelectedAlgos,
   setSelectedDatasets,
-  setSelectedNormalizations,
   setLoop,
   setArguments,
   setArgumentByKey,

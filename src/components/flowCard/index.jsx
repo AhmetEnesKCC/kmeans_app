@@ -22,7 +22,6 @@ const FlowCard = ({ flowKey }) => {
   const labelChanger = {
     algo: "Algorithms",
     data: "Datasets",
-    norm: "Normalizations",
   };
 
   const dispatch = useDispatch();

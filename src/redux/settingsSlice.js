@@ -4,7 +4,6 @@ const initialState = {
   loop: 100,
   algo: "",
   data: "",
-  norm: "",
 };
 
 const settingsSlice = createSlice({

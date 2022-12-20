@@ -37,7 +37,6 @@ const Settings = () => {
     defaultValues: {
       algo: "",
       data: "",
-      norm: "",
       loop: 100,
     },
   });
@@ -48,7 +47,6 @@ const Settings = () => {
       if (settings) {
         settings["algo"] && setValue("algo", settings["algo"]);
         settings["data"] && setValue("data", settings["data"]);
-        settings["norm"] && setValue("norm", settings["norm"]);
         setLocalLoop(settings.loop);
       }
     });
@@ -137,28 +135,6 @@ const Settings = () => {
               Klasör Seç
             </Button>
           </Group>{" "}
-          <Group noWrap align={"end"}>
-            <Input.Wrapper
-              className={classes.inputWrapper}
-              label="Normalizations"
-            >
-              <Input
-                onClick={() => {
-                  handleSelectFolder("norm");
-                }}
-                readOnly
-                placeholder="Klasör Seç"
-                {...register("norm")}
-              />
-            </Input.Wrapper>
-            <Button
-              onClick={() => {
-                handleSelectFolder("norm");
-              }}
-            >
-              Klasör Seç
-            </Button>
-          </Group>
           <Button
             size="md"
             type="submit"
