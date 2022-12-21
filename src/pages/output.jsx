@@ -6,9 +6,6 @@ import { BsTerminal, BsGraphUp, BsDownload } from "react-icons/bs";
 import { VscOutput } from "react-icons/vsc";
 import { useSelector } from "react-redux";
 
-import ResizableArea from "../components/ResizableArea";
-
-import { red, white } from "tailwindcss/colors";
 import Chart from "../components/index/Chart";
 import { useCallback } from "react";
 import {
@@ -16,20 +13,27 @@ import {
   Badge,
   Box,
   Button,
-  Code,
+  Dialog,
   Divider,
   Group,
   MultiSelect,
+  NumberInput,
+  Paper,
   Stack,
   Switch,
   Table,
   Text,
   Tooltip,
 } from "@mantine/core";
-import { AiOutlineReload, AiOutlineSolution } from "react-icons/ai";
+import {
+  AiOutlineClose,
+  AiOutlineReload,
+  AiOutlineSolution,
+} from "react-icons/ai";
 import { Prism } from "@mantine/prism";
-import { useElementSize } from "@mantine/hooks";
+import { useClickOutside, useClipboard, useElementSize } from "@mantine/hooks";
 import html2canvas from "html2canvas";
+import { showNotification, cleanNotifications } from "@mantine/notifications";
 
 const { ipcRenderer } = window.require("electron");
 
@@ -152,6 +156,8 @@ const Output = () => {
   }, [maximize]);
 
   const { ref: GridRef, height, width } = useElementSize();
+
+  const [fixto, setFixto] = useState(4);
 
   return (
     <Stack
@@ -335,155 +341,44 @@ const Output = () => {
       )}
 
       {tab === "table" && (
-        <>
-          {/* <Stack
-            sx={{
+        <Stack
+          style={{
+            width: "100%",
+            height: "100%",
+          }}
+        >
+          <Button
+            variant="subtle"
+            rightIcon={<BsDownload />}
+            onClick={downloadAsPng}
+          >
+            Download As PNG
+          </Button>
+          <NumberInput
+            value={fixto}
+            onChange={(v) => {
+              if (v > 0 && v < 20) {
+                setFixto(Math.floor(v));
+              }
+            }}
+            label="Virgülden Sonraki Basamak"
+            min={1}
+            max={20}
+          />
+          <Box
+            style={{
               width: "100%",
               height: "100%",
               overflow: "auto",
             }}
           >
-            <Button
-              variant="subtle"
-              rightIcon={<BsDownload />}
-              onClick={downloadAsPng}
-            >
-              Download As PNG
-            </Button>
             <Group
-              spacing={12}
-              p={3}
-              align={"end"}
-              sx={{
-                width: "max-content",
-                height: "max-content",
-                position: "relative",
-              }}
-              ref={imgRef}
+              component={Paper}
               noWrap
-            >
-              <Stack
-                align={"start"}
-                justify="end"
-                sx={{
-                  justifySelf: "end",
-                }}
-              >
-                {selectedArguments.algo.map((d, i) => (
-                  <>
-                    <Text
-                      transform="capitalize"
-                      weight={"bold"}
-                      sx={{
-                        width: "100%",
-                        lineHeight: "24px",
-                      }}
-                      px={4}
-                    >
-                      {d.labelWOExt}
-                    </Text>
-                    {i !== selectedArguments.algo.length - 1 && (
-                      <Divider
-                        orientation="horizontal"
-                        color={"blue.5"}
-                        sx={{
-                          position: "absolute",
-                          bottom: 40 * (i + 1),
-                          width: "100%",
-                        }}
-                      />
-                    )}
-                  </>
-                ))}
-              </Stack>
-              <Divider color={"blue"} orientation="vertical" />
-              {selectedArguments.data.map((data) => {
-                return (
-                  <>
-                    <Stack ref={GridRef} align={"stretch"}>
-                      <Text
-                        weight={"bold"}
-                        sx={(theme) => ({
-                          color: theme.colors.blue[5],
-                        })}
-                        align="center"
-                        transform="capitalize"
-                      >
-                        {data.labelWOExt}
-                      </Text>
-                      <Group noWrap>
-                        <Stack>
-                          <Text sx={{ flex: 1 }} align="center" weight={"bold"}>
-                            SSE
-                          </Text>
-                          {selectedArguments.algo.map((d) => (
-                            <Text
-                              sx={{
-                                lineHeight: "24px",
-                              }}
-                            >
-                              {
-                                result
-                                  .find((r) => r.label === d.label)
-                                  ?.data?.find(
-                                    (r) =>
-                                      r.dataset_name === d.name &&
-                                      r.algorithm_name === data.label
-                                  )?.sse
-                              }
-                            </Text>
-                          ))}
-                        </Stack>
-                        <Divider orientation="vertical" color="blue.5" />
-                        <Stack>
-                          <Text sx={{ flex: 1 }} align="center" weight={"bold"}>
-                            TIME
-                          </Text>
-                          {selectedArguments.algo.map((d) => (
-                            <Text
-                              sx={{
-                                lineHeight: "24px",
-                              }}
-                            >
-                              {
-                                result
-                                  .find((r) => r.label === d.label)
-                                  ?.data?.find(
-                                    (r) =>
-                                      r.dataset_name === d.name &&
-                                      r.algorithm_name === data.label
-                                  )?.time
-                              }
-                            </Text>
-                          ))}
-                        </Stack>
-                      </Group>
-                    </Stack>
-                    <Divider color={"blue"} orientation="vertical" />
-                  </>
-                );
-              })}
-            </Group>
-          </Stack> */}
-          <Stack
-            style={{
-              width: "100%",
-              height: "100%",
-            }}
-          >
-            <Button
-              variant="subtle"
-              rightIcon={<BsDownload />}
-              onClick={downloadAsPng}
-            >
-              Download As PNG
-            </Button>
-            <Group
               ref={imgRef}
-              noWrap
               spacing={0}
               align="flex-start"
-              sx={{ width: "100%", overflow: "auto" }}
+              sx={{ width: "max-content" }}
             >
               <Stack spacing={0}>
                 <Table sx={{ opacity: 0 }} withBorder withColumnBorders>
@@ -538,6 +433,7 @@ const Output = () => {
                         </tr>
                       </thead>
                       <ResultTableBody
+                        fixTo={fixto}
                         selectedArguments={selectedArguments}
                         result={result}
                         data={d}
@@ -547,8 +443,8 @@ const Output = () => {
                 );
               })}
             </Group>
-          </Stack>
-        </>
+          </Box>
+        </Stack>
       )}
       {tab === "terminal" && (
         <Stack
@@ -563,9 +459,9 @@ const Output = () => {
           p={4}
         >
           <Switch
-            value={detailed}
+            checked={detailed}
             onChange={(e) => {
-              setDetailed(!detailed);
+              setDetailed(e.target.checked);
             }}
             label="Show Details"
             sx={{
@@ -678,32 +574,124 @@ const Output = () => {
   );
 };
 
-const ResultTableBody = ({ selectedArguments, result, data: d }) => {
-  const resultData = result.find((r) => r.label === d.name);
-  const sorted = resultData.data.map((d) => d.sse).sort();
+const DialogBody = ({ sse, onClose, defaultFixTo }) => {
+  const [fixto, setFixto] = useState(defaultFixTo ?? 4);
+  const clipboard = useClipboard();
+
+  const fixed = useCallback(() => {
+    return sse?.toFixed(fixto);
+  }, [fixto, sse]);
+
+  const handleCopy = (str) => {
+    clipboard.copy(str);
+    showNotification({
+      message: "Kopyalandı: " + str,
+      color: "green",
+    });
+    onClose?.();
+  };
 
   return (
-    <tbody>
-      {selectedArguments.algo.map((al) => {
-        const data = resultData.data.find((d) => d.algorithm_name === al.label);
-        return (
-          <tr>
-            <td>
-              <Tooltip openDelay={500} label={data?.sse}>
-                <Text>{data?.sse?.toFixed(4)}</Text>
-              </Tooltip>
-            </td>
-            <td
-              style={{
-                textAlign: "center",
+    <Stack>
+      <ActionIcon onClick={onClose}>
+        <AiOutlineClose />
+      </ActionIcon>
+      <Group>
+        <Text>{sse}</Text>
+        <Button onClick={() => handleCopy(sse)}>SSE Kopyala</Button>
+      </Group>
+      <Divider orientation="horizontal" />
+      <Group noWrap>
+        <Stack>
+          <Text>{fixed()}</Text>
+          <Group noWrap>
+            <NumberInput
+              min={1}
+              max={20}
+              step={1}
+              label="Virgülden sonraki basamak"
+              value={fixto}
+              onChange={(v) => {
+                if (v > 0 && v < 20) {
+                  setFixto(Math.floor(v));
+                }
+              }}
+            />
+            <Button
+              onClick={() => {
+                handleCopy(fixed());
               }}
             >
-              {sorted.indexOf(data?.sse) + 1}
-            </td>
-          </tr>
-        );
-      })}
-    </tbody>
+              Kopyala
+            </Button>
+          </Group>
+        </Stack>
+      </Group>
+    </Stack>
+  );
+};
+
+const ResultTableBody = ({ selectedArguments, result, data: d, fixTo }) => {
+  const resultData = result.find((r) => r.label === d.name);
+  const sorted = resultData.data.map((d) => d.sse).sort();
+  const [dialog, setDialog] = useState({
+    visibility: false,
+    data: 0,
+    defaultFixTo: fixTo,
+  });
+  const ref = useClickOutside(() =>
+    setDialog({
+      visibility: false,
+      data: 0,
+      defaultFixTo: fixTo,
+    })
+  );
+  return (
+    <>
+      <tbody>
+        {selectedArguments.algo.map((al) => {
+          const data = resultData.data.find(
+            (d) => d.algorithm_name === al.label
+          );
+          const sse = data?.sse;
+
+          const sseFixed = sse?.toFixed(fixTo ?? 4);
+          return (
+            <tr>
+              <td
+                onClick={() => {
+                  setDialog({
+                    visibility: true,
+                    data: sse,
+                    defaultFixTo: fixTo,
+                  });
+                }}
+              >
+                <Tooltip openDelay={500} label={data?.sse}>
+                  <Text>{sseFixed ?? data.sse}</Text>
+                </Tooltip>
+              </td>
+              <td
+                style={{
+                  textAlign: "center",
+                }}
+              >
+                {sorted.indexOf(data?.sse) + 1}
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+      <Dialog ref={ref} opened={dialog.visibility}>
+        <DialogBody
+          defaultFixTo={dialog.defaultFixTo}
+          onClose={() => {
+            setDialog({ visibility: false, data: 0 });
+          }}
+          sse={dialog.data}
+        />
+      </Dialog>
+    </>
   );
 };
 

@@ -9,7 +9,7 @@ import { ModalsProvider } from "@mantine/modals";
 import { useSelector } from "react-redux";
 import { ReactFlowProvider } from "reactflow";
 import Settings from "../pages/settings";
-import Output from "../pages/Output";
+import Output from "../pages/output";
 import EditCode from "../pages/editCode";
 
 const Router = () => {

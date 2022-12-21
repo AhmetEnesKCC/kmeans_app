@@ -40,6 +40,43 @@ const Note = ({ version, texts }) => {
 const Notes = () => {
   const notes = [
     {
+      version: "0.2.3",
+      texts: [
+        {
+          label: "feature",
+          lines: [
+            "Tablonun tasarımı değiştirildi.",
+            "Tablo için virgülden sonra basamak ayarlanılabilecek bir input eklenildi.",
+            "Result lara datasetlerin k sı eklenildi.",
+            "Klasörün tüm içeriğini seçebilmek için yeni bir switch eklenildi.",
+          ],
+        },
+        {
+          label: "fix",
+          lines: [
+            "Flowcard da seçilen dosyalarla ilgili aynı dosyanın iki kere seçilmesine sebep olan bir hata giderildi",
+          ],
+        },
+        {
+          label: "next",
+          lines: [
+            "Main.py dosyasının mutate edilmesini sağlayabilecek yeni bir arayüz üzerinde çalışılıyor.",
+          ],
+        },
+      ],
+    },
+    {
+      version: "0.2.2",
+      texts: [
+        {
+          label: "fix",
+          lines: [
+            "Datasetler için geçerli K nın tanımlanmasından dolayı doğan bir crash hatası giderildi",
+          ],
+        },
+      ],
+    },
+    {
       version: "0.2.1",
       texts: [
         {

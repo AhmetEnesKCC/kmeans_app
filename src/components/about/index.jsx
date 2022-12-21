@@ -21,7 +21,7 @@ const About = () => {
           position="apart"
         >
           <Text variant="h4" weight={"lighter"}>
-            v0.2.0
+            v0.2.3
           </Text>
           <Badge color={"orange"}>On Development</Badge>
         </Group>
@@ -30,7 +30,7 @@ const About = () => {
         </Card.Section>
         <Card.Section>
           <Text variant="p" sx={{ padding: 2 }}>
-            Started to development at 2022. New features will be added.
+            Started to developm at 2022. New features will be added.
           </Text>
           <Divider></Divider>
           <Group position="center">

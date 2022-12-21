@@ -24,6 +24,7 @@ def normalization(ds):
         # print(f"Range of feature {feature+1} = {np.ptp(copy_ds[:,feature])}")
     return copy_ds
 
+
 try:
 
     warnings.filterwarnings("ignore")
@@ -85,10 +86,10 @@ try:
         dfs["name"] = dataset["name"]
         dfs["dataframe"] = normalization(df)
         r = re.search("([1-9][0-9]{0,5})$", dfs["labelWOExt"])
-        k = 3 
+        k = 3
         if r:
             k = int(r.group())
-        dfs["k"] = k        
+        dfs["k"] = k
         dataFrames.append(dfs)
 
     for algorithm in algorithms:
@@ -120,9 +121,7 @@ try:
             algorithm_name = al["name"]
             dataset_name = ds["name"]
             dataset_k = ds["k"]
-            dsResult["categories"].append(
-                al["labelWOExt"]
-            )
+            dsResult["categories"].append(al["labelWOExt"])
             result = {
                 "sse": 0,
                 "iter": 0,
@@ -148,6 +147,7 @@ try:
             result["time"] /= loop
             result["total-time"] /= loop
             result["iter"] /= loop
+            result["k"] = ds["k"]
             dsResult["data"].append(result)
             dsResult["series"]["sse"].append(result["sse"])
             dsResult["series"]["time"].append(result["time"])

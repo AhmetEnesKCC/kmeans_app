@@ -150,9 +150,9 @@ const FlowBuilder = () => {
             </Text>
             <Group>
               <Link to="/output">
-                <ActionIcon size="lg" color="green">
-                  <BiPlay />
-                </ActionIcon>
+                <Button leftIcon={<BiPlay />} size="sm" color="green">
+                  Run
+                </Button>
               </Link>
             </Group>
           </Group>
@@ -192,7 +192,6 @@ const FlowTabPanel = ({ data = [] }) => {
     .map((d) => (
       <Tabs.Panel value={d.fileType} sx={{ height: "100%" }}>
         <Stack sx={{ flex: 1, height: "100%", overflow: "hidden" }}>
-          {/* <Input icon={<AiOutlineSearch />} placeholder="Search" /> */}
           <Box sx={{ flex: 1, height: "100%", overflow: "auto" }}>
             <FlowPanelContent data={d}>{d.label}</FlowPanelContent>
           </Box>
@@ -248,12 +247,15 @@ const FlowPanelContent = ({ data = {}, showContent }) => {
         (ar) => !data.content.includes(ar)
       );
     } else {
-      newArguments[data.fileType] = [
-        ...newArguments[data.fileType],
-        ...data.content.filter((d) => !d.iteratable),
-      ];
+      newArguments[data.fileType] = Array.from(
+        new Set([
+          ...newArguments[data.fileType].filter(
+            (na) => !data.content.some((d) => d.path === na.path)
+          ),
+          ...data.content.filter((d) => !d.iteratable),
+        ])
+      );
     }
-    console.log(newArguments);
     dispatch(setArguments(newArguments));
   }, [selectedArguments[data.fileType]]);
 

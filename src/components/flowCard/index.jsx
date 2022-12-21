@@ -156,14 +156,17 @@ const FlowCardItem = ({ data }) => {
       p={2}
       px={4}
       sx={(theme) => ({
-        color: theme.colors.blue[8],
+        color: theme.colorScheme === "dark" ? "white" : theme.colors.blue[8],
         cursor: "pointer",
         "&:hover": {
-          backgroundColor: theme.colors.gray[1],
+          backgroundColor:
+            theme.colorScheme === "dark"
+              ? theme.colors.gray[8]
+              : theme.colors.gray[1],
         },
       })}
     >
-      {data?.labelWOExt}
+      <Text>{data?.labelWOExt}</Text>
       <Group>
         <Box
           p={3}
