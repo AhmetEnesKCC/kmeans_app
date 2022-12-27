@@ -115,12 +115,13 @@ try:
         dsResult["labelWOExt"] = ds["labelWOExt"]
         dsResult["label"] = ds["label"]
         dsResult["name"] = ds["name"]
+        df = ds["dataframe"]
+        dataset_name = ds["name"]
+        dataset_k = ds["k"]
 
         for al in algorithmFunctions:
-            df = ds["dataframe"]
             algorithm_name = al["name"]
-            dataset_name = ds["name"]
-            dataset_k = ds["k"]
+
             dsResult["categories"].append(al["labelWOExt"])
             result = {
                 "sse": 0,
@@ -130,7 +131,7 @@ try:
             }
             result["algorithm_name"] = algorithm_name
             result["dataset_name"] = dataset_name
-            
+
             for i in range(loop):
                 kmeans_result = kmeans(df, dataset_k, al["function"])
                 sse = kmeans_result["sse"]
@@ -142,8 +143,8 @@ try:
                 result["total-time"] += total_time
                 result["iter"] += iters
             print(
-                    f"-step- {algorithm_name} run with dataset: {dataset_name} for {loop} times."
-                )   
+                f"-step- {algorithm_name} run with dataset: {dataset_name} for {loop} times."
+            )
             result["sse"] /= loop
             result["time"] /= loop
             result["total-time"] /= loop

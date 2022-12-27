@@ -228,7 +228,7 @@ class PythonRunner {
 
   stop() {
     this.stopped = true;
-    if (!this.shell?.terminated) this.shell?.kill();
+    this.shell?.kill?.();
   }
 
   runScript(scriptFile = "main.py") {

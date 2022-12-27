@@ -90,7 +90,7 @@ const Settings = () => {
         <Stack component={PageBox} spacing={30} p={10}>
           <NumberInput
             label="Loop"
-            placeHolder="Loop Girin"
+            placeholder="Loop Girin"
             value={localLoop}
             onChange={(value) => {
               setValue("loop", value);

@@ -27,6 +27,7 @@ import {
   Tooltip,
 } from "@mantine/core";
 import {
+  AiFillStop,
   AiOutlineClose,
   AiOutlineReload,
   AiOutlineSolution,
@@ -157,6 +158,7 @@ const Output = () => {
       ipcRenderer.removeAllListeners("output-message-print");
       ipcRenderer.removeAllListeners("output-error");
       ipcRenderer.removeAllListeners("output-close");
+      stopCode();
       dispatch(setOutputScreen("visit"));
     };
   }, []);
@@ -182,6 +184,11 @@ const Output = () => {
     setTab("terminal");
     setVisit(false);
     ipcRenderer.send("run", selectedArguments);
+  }, []);
+
+  const stopCode = useCallback(() => {
+    setStatus("stop");
+    ipcRenderer.send("stop-code");
   }, []);
 
   const appTheme = useSelector((state) => state.ui.theme);
@@ -229,6 +236,7 @@ const Output = () => {
           {status === "done" && <Badge color="green">Done</Badge>}
           {status === null && <Badge color="orange">Processing</Badge>}
           {status === "error" && <Badge color="red">Error</Badge>}
+          {status === "stop" && <Badge color="blue">Stop</Badge>}
           <Text weight="bold">
             {progress && (progress < 100 ? progress : 100) + "%"}
           </Text>
@@ -241,6 +249,20 @@ const Output = () => {
             rightIcon={<AiOutlineReload />}
           >
             Yeniden Çalıştır
+          </Button>
+        )}
+        {!["done", "error", "stop"].includes(status) && (
+          <Button
+            onClick={stopCode}
+            variant="subtle"
+            rightIcon={<AiFillStop />}
+          >
+            Durdur
+          </Button>
+        )}
+        {status === "stop" && (
+          <Button onClick={runCode} variant="subtle" rightIcon={<AiFillStop />}>
+            Başlat
           </Button>
         )}
       </Group>
