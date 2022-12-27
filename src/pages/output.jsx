@@ -99,6 +99,7 @@ const Output = () => {
   useEffect(() => {
     if (progress >= 100 && result) {
       setStatus("done");
+      return;
     }
     if (progress >= 100 && !isLoading) {
       dispatch(
