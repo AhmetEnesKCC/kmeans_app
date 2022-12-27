@@ -130,6 +130,7 @@ try:
             }
             result["algorithm_name"] = algorithm_name
             result["dataset_name"] = dataset_name
+            
             for i in range(loop):
                 kmeans_result = kmeans(df, dataset_k, al["function"])
                 sse = kmeans_result["sse"]
@@ -140,9 +141,9 @@ try:
                 result["time"] += time_
                 result["total-time"] += total_time
                 result["iter"] += iters
-                print(
-                    f"-step- {algorithm_name} run with dataset: {dataset_name} for {i + 1} times."
-                )
+            print(
+                    f"-step- {algorithm_name} run with dataset: {dataset_name} for {loop} times."
+                )   
             result["sse"] /= loop
             result["time"] /= loop
             result["total-time"] /= loop

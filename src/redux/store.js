@@ -3,6 +3,7 @@ import argumentSlice from "./argumentSlice";
 import codeStatusSlice from "./codeStatusSlice";
 import infoSlice from "./infoSlice";
 import menubarSlice from "./menubarSlice";
+import outputScreenSlice from "./outputScreenSlice";
 import settingsSlice from "./settingsSlice";
 import summarySlice from "./summarySlice";
 import uiSlice from "./uiSlice";
@@ -15,6 +16,7 @@ const rootReducer = {
   menubar: menubarSlice,
   ui: uiSlice,
   settings: settingsSlice,
+  outputScreen: outputScreenSlice,
 };
 
 const Store = configureStore({

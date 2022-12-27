@@ -77,7 +77,6 @@ const Appbar = () => {
             <Text>Kmeans GUI</Text>
           </Box>
           <Group noWrap>
-            <Text>Tema: {theme === "dark" ? "Koyu" : "Açık"}</Text>
             <Switch
               style={{
                 "-webkit-app-region": "no-drag",

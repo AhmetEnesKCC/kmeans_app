@@ -11,7 +11,7 @@ import {
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setArgumentByKey, setArguments } from "../../redux/argumentSlice";
-import { DiRasberryPi } from "react-icons/di";
+import { ImFileEmpty } from "react-icons/im";
 import { BiClipboard, BiTrash } from "react-icons/bi";
 import { FcInfo } from "react-icons/fc";
 import { openModal } from "@mantine/modals";
@@ -80,8 +80,7 @@ const FlowCard = ({ flowKey }) => {
             })}
           {data?.length === 0 && (
             <Stack align="center">
-              <Text align="center">Buralar Hep Dutluktu</Text>
-              <DiRasberryPi size={40} opacity={0.5} />
+              <ImFileEmpty size={40} opacity={0.2} />
             </Stack>
           )}
         </Stack>

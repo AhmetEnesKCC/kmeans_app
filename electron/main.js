@@ -4,9 +4,11 @@ const {
   ipcMain,
   shell,
   dialog,
-  ipcRenderer,
   globalShortcut,
 } = require("electron");
+
+ipcMain.setMaxListeners(100);
+
 const { nanoid } = require("@reduxjs/toolkit");
 const path = require("path");
 const {
@@ -234,6 +236,7 @@ class PythonRunner {
     let shell = new PythonShell(scriptFile, {
       scriptPath: pythonRunnerLocation(),
       args: [globalArgs.datasets, globalArgs.algorithms],
+      pythonOptions: ["-u"],
     });
     this.shell = shell;
 
@@ -450,6 +453,5 @@ ipcMain.on("get-app-settings", () => {
 });
 
 ipcMain.on("save-storage", (e, { key, value }) => {
-  console.log(key);
   store.set(key, value);
 });

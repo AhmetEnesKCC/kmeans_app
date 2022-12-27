@@ -1,13 +1,22 @@
-import { useEffect } from "react";
-import useChart from "../../hooks/useChart";
+import ApexChart from "react-apexcharts";
 
 const Chart = ({ title, chartOptions }) => {
-  const { chartRef } = useChart(chartOptions);
-
   return (
     <div className="graph-wrapper">
       <div className="graph-title">{title}</div>
-      <div className="graph" ref={chartRef}></div>
+      <ApexChart
+        type="bar"
+        options={{
+          ...chartOptions?.options,
+          ...{
+            theme: {
+              mode: "dark",
+            },
+          },
+        }}
+        series={chartOptions?.series}
+        className="graph"
+      />
     </div>
   );
 };

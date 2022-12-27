@@ -2,9 +2,9 @@ import { useEffect } from "react";
 import { useRef } from "react";
 import { useState } from "react";
 import { IoIosArrowUp, IoMdClose } from "react-icons/io";
-import { BsTerminal, BsGraphUp, BsDownload } from "react-icons/bs";
+import { BsTerminal, BsGraphUp, BsDownload, BsTable } from "react-icons/bs";
 import { VscOutput } from "react-icons/vsc";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import Chart from "../components/index/Chart";
 import { useCallback } from "react";
@@ -22,6 +22,7 @@ import {
   Stack,
   Switch,
   Table,
+  Tabs,
   Text,
   Tooltip,
 } from "@mantine/core";
@@ -34,12 +35,16 @@ import { Prism } from "@mantine/prism";
 import { useClickOutside, useClipboard, useElementSize } from "@mantine/hooks";
 import html2canvas from "html2canvas";
 import { showNotification, cleanNotifications } from "@mantine/notifications";
+import { setLoading } from "../redux/uiSlice";
+import { setOutputScreen } from "../redux/outputScreenSlice";
 
 const { ipcRenderer } = window.require("electron");
 
 const Output = () => {
   const [outputMessage, setOutputMessage] = useState([]);
   const [outputStep, setOutputStep] = useState(0);
+
+  const outputScreenType = useSelector((state) => state.outputScreen);
 
   const [result, setResult] = useState(null);
   const [tab, setTab] = useState("terminal");
@@ -65,18 +70,16 @@ const Output = () => {
     ipcRenderer.send("download-png", dataURL);
   };
 
+  const [visit, setVisit] = useState(false);
+
   useEffect(() => {
     const multiplication =
-      selectedArguments.data.length *
-      selectedArguments.algo.length *
-      selectedArguments.loop;
+      selectedArguments.data.length * selectedArguments.algo.length;
     if (multiplication !== 0) {
       setProgress(
         Math.floor(
           (outputStep * 100) /
-            (selectedArguments.data.length *
-              selectedArguments.algo.length *
-              selectedArguments.loop)
+            (selectedArguments.data.length * selectedArguments.algo.length)
         )
       );
     } else {
@@ -88,17 +91,44 @@ const Output = () => {
     setTab("terminal");
   }, [codeStatus]);
 
-  useEffect(() => {
-    if (progress >= 100) {
-      setStatus("done");
-    }
-  }, [progress]);
+  const { visible: isLoading } = useSelector((state) => state.ui.loading);
+
+  const dispatch = useDispatch();
 
   useEffect(() => {
+    if (progress >= 100 && result) {
+      setStatus("done");
+    }
+    if (progress >= 100 && !isLoading) {
+      dispatch(
+        setLoading({
+          visible: true,
+          title: "Result json dosyası okunuyor.",
+        })
+      );
+    }
+    if (isLoading && status === "done") {
+      dispatch(
+        setLoading({
+          visible: false,
+          title: "",
+        })
+      );
+    }
+  }, [result, status]);
+
+  useEffect(() => {
+    if (outputScreenType === "visit") {
+      setVisit(true);
+      return;
+    }
+    setVisit(false);
     ipcRenderer.on("output-start", (e, data) => {
       setOutputMessage([{ message: "Start", type: "start" }]);
       setOutputStep(0);
+      setProgress(0);
       setStatus(null);
+      setResult(null);
     });
 
     ipcRenderer.on("output-message-print", (e, data) => {
@@ -122,12 +152,19 @@ const Output = () => {
     ipcRenderer.on("output-result", (e, data) => {
       setResult(JSON.parse(data));
     });
+
+    return () => {
+      ipcRenderer.removeAllListeners("output-message-print");
+      ipcRenderer.removeAllListeners("output-error");
+      ipcRenderer.removeAllListeners("output-close");
+      dispatch(setOutputScreen("visit"));
+    };
   }, []);
 
   useEffect(() => {
     if (outputRef.current && tab === "terminal") {
       outputRef.current.scroll({
-        top: outputRef.current.scrollHeight,
+        top: outputRef?.current?.scrollHeight ?? 0,
         behavior: "smooth",
       });
     }
@@ -142,20 +179,16 @@ const Output = () => {
   }, [tab]);
 
   const runCode = useCallback(() => {
+    setTab("terminal");
+    setVisit(false);
     ipcRenderer.send("run", selectedArguments);
   }, []);
+
+  const appTheme = useSelector((state) => state.ui.theme);
 
   useEffect(() => {
     runCode();
   }, []);
-
-  const [maximize, setMaximize] = useState(false);
-
-  const handleMaximize = useCallback(() => {
-    setMaximize(!maximize);
-  }, [maximize]);
-
-  const { ref: GridRef, height, width } = useElementSize();
 
   const [fixto, setFixto] = useState(4);
 
@@ -183,144 +216,361 @@ const Output = () => {
           <Box
             sx={(theme) => ({
               backgroundColor: theme.colors.green[8],
-              width: progress + "%",
+              width: (progress < 100 ? progress : 100) + "%",
+              maxWidth: "100%",
               height: "100%",
               borderRadius: theme.radius.md,
             })}
           ></Box>
         )}
       </Box>
-      <Group className="flex p-2 gap-x-2 output-tabs">
-        <div
-          onClick={() => {
-            setTab("terminal");
-          }}
-          className={tab === "terminal" && "selected"}
-        >
-          <Button
-            variant={tab === "terminal" ? "filled" : "outline"}
-            rightIcon={<BsTerminal />}
-            color={"green.6"}
-          >
-            Terminal
-          </Button>
-        </div>
-        {status === "done" && (
-          <>
-            <div
-              onClick={() => {
-                setTab("table");
-              }}
-              className={tab === "table" && "selected"}
-            >
-              <Button
-                variant={tab === "table" ? "filled" : "outline"}
-                color={"lime.8"}
-                rightIcon={<BsGraphUp />}
-              >
-                Table
-              </Button>
-            </div>
-            <div
-              onClick={() => {
-                setTab("graph");
-              }}
-              className={tab === "graph" && "selected"}
-            >
-              <Button
-                variant={tab === "graph" ? "filled" : "outline"}
-                color={"orange.5"}
-                rightIcon={<BsGraphUp />}
-              >
-                Graph
-              </Button>
-            </div>
-            <div
-              onClick={() => {
-                setTab("result");
-              }}
-              className={tab === "result" && "selected"}
-            >
-              <Button
-                variant={tab === "result" ? "filled" : "outline"}
-                color={"violet.5"}
-                rightIcon={<AiOutlineSolution />}
-              >
-                Result
-              </Button>
-            </div>
-          </>
-        )}
-
-        <div
-          onClick={() => {
-            setTab("arguments");
-          }}
-          className={tab === "table" && "selected"}
-        >
-          <Button
-            variant={tab === "arguments" ? "filled" : "outline"}
-            rightIcon={<VscOutput />}
-            color={"blue.6"}
-          >
-            Arguments
-          </Button>
-        </div>
-      </Group>
       <Group position="apart">
         <Group p={4}>
           {status === "done" && <Badge color="green">Done</Badge>}
           {status === null && <Badge color="orange">Processing</Badge>}
           {status === "error" && <Badge color="red">Error</Badge>}
-          <Text weight="bold">{progress && progress + "%"}</Text>
+          <Text weight="bold">
+            {progress && (progress < 100 ? progress : 100) + "%"}
+          </Text>
         </Group>
-        {["done", "error"].includes(status) && (
+
+        {(["done", "error"].includes(status) || visit) && (
           <Button
             onClick={runCode}
             variant="subtle"
             rightIcon={<AiOutlineReload />}
           >
-            Aynı Argümanlarla Yeniden Çalıştır
+            Yeniden Çalıştır
           </Button>
         )}
       </Group>
+      <Tabs
+        sx={{
+          overflow: "hidden !important",
+          flex: 1,
+        }}
+        styles={{
+          panel: {
+            width: "100%",
+            flex: 1,
+            minHeight: 0,
+            overflow: "auto",
+            maxHeight: "calc(100% - 50px)",
+            height: "100%",
+          },
+        }}
+        defaultValue={"terminal"}
+      >
+        <Tabs.List>
+          <Tabs.Tab value="terminal" icon={<BsTerminal />} color={"green.6"}>
+            Terminal
+          </Tabs.Tab>
+          <Tabs.Tab
+            disabled={!Boolean(result && status === "done")}
+            value="table"
+            icon={<BsTable />}
+            color={"lime.8"}
+          >
+            Tablo
+          </Tabs.Tab>
+          <Tabs.Tab
+            disabled={!Boolean(result && status === "done")}
+            value="graph"
+            icon={<BsGraphUp />}
+            color={"orange.5"}
+          >
+            Grafik
+          </Tabs.Tab>
+          <Tabs.Tab
+            disabled={!Boolean(result && status === "done")}
+            value="result"
+            icon={<AiOutlineSolution />}
+            color={"violet.5"}
+          >
+            Result JSON
+          </Tabs.Tab>
+          <Tabs.Tab value="arguments" icon={<VscOutput />} color={"blue.6"}>
+            Argumanlar
+          </Tabs.Tab>
+        </Tabs.List>
+        <Tabs.Panel value="terminal">
+          <Stack
+            align="start"
+            justify="flex-start"
+            spacing={10}
+            p={4}
+            sx={{
+              overflow: "hidden !important",
+              height: "100%",
+              maxHeight: "100%",
+            }}
+          >
+            <Switch
+              checked={detailed}
+              onChange={(e) => {
+                setDetailed(e.target.checked);
+              }}
+              label="Show Details"
+              sx={{
+                alignSelf: "flex-end",
+              }}
+            />
+            <MultiSelect
+              label="Output Tipleri"
+              color="red"
+              onChange={(v) => {
+                setMultiFilter(v);
+              }}
+              data={[
+                {
+                  label: "Error",
+                  value: "error",
+                },
+                {
+                  label: "Detail",
+                  value: "detail",
+                },
+                {
+                  label: "Print",
+                  value: "print",
+                },
+                {
+                  label: "End",
+                  value: "end",
+                },
+                {
+                  label: "Start",
+                  value: "start",
+                },
+              ]}
+            />
+            <Divider sx={{ width: "100%" }} />
+            <Box sx={{ flex: 1, overflow: "auto", width: "100%" }}>
+              <Stack sx={{ width: "100%" }}>
+                {outputMessage
+                  .filter((d) =>
+                    multiFilter.length === 0 ? d : multiFilter.includes(d.type)
+                  )
+                  .filter((d) => {
+                    return detailed ? d : d.type !== "detail";
+                  })
+                  .map((om, i) => (
+                    <Group
+                      sx={{ width: "100%", height: "100%", overflow: "auto" }}
+                      position="apart"
+                      noWrap
+                      align="start"
+                      key={i}
+                    >
+                      <Group>
+                        <Text
+                          weight={"bold"}
+                          align="right"
+                          sx={(theme) => ({
+                            backgroundColor:
+                              theme.colors.gray[
+                                theme.colorScheme === "dark" ? 7 : 1
+                              ],
+                            opacity: 0.7,
+                            width: 80,
+                          })}
+                        >
+                          {i + 1}
+                        </Text>
+                        <Divider orientation="vertical" />
+                        <Text>{om.message}</Text>
+                      </Group>
+                      {om.type === "start" && (
+                        <Badge color={"green"}>Started</Badge>
+                      )}
+                      {om.type === "end" && <Badge color={"blue"}>End</Badge>}
+                      {om.type === "print" && (
+                        <Badge color={"orange"}>Print</Badge>
+                      )}
+                      {om.type === "detail" && (
+                        <Badge color={"indigo"}>Detail</Badge>
+                      )}
+                      {om.type === "error" && (
+                        <Badge color={"red"}>Error</Badge>
+                      )}
+                    </Group>
+                  ))}
+              </Stack>
+            </Box>
+          </Stack>
+        </Tabs.Panel>
+        <Tabs.Panel value="table">
+          <Stack>
+            <Group align={"flex-end"} p={0} spacing={12}>
+              <NumberInput
+                value={fixto}
+                onChange={(v) => {
+                  if (v > 0 && v < 20) {
+                    setFixto(Math.floor(v));
+                  }
+                }}
+                label="Virgülden Sonraki Basamak"
+                min={1}
+                max={20}
+              />
+              <ActionIcon
+                variant="filled"
+                color={"blue"}
+                onClick={downloadAsPng}
+              >
+                <BsDownload />
+              </ActionIcon>
+            </Group>
 
-      {tab === "graph" && (
-        <Box sx={{ overflow: "auto" }}>
-          {result.map((r) => {
+            <Box
+              style={{
+                width: "100%",
+                height: "100%",
+                overflow: "auto",
+              }}
+            >
+              <Group
+                component={Paper}
+                noWrap
+                ref={imgRef}
+                spacing={0}
+                align="flex-start"
+                sx={{ width: "max-content" }}
+              >
+                <Stack spacing={0}>
+                  <Table sx={{ opacity: 0 }} withBorder withColumnBorders>
+                    <tbody>
+                      <tr>
+                        <td style={{ opacity: 0 }}>.</td>
+                      </tr>
+                      <tr>
+                        <td style={{ opacity: 0 }}>.</td>
+                      </tr>
+                    </tbody>
+                  </Table>
+                  <Table
+                    withBorder
+                    striped
+                    sx={{
+                      width: "max-content",
+                      "th, tr": {
+                        whiteSpace: "nowrap",
+                      },
+                      position: "sticky",
+                      left: 0,
+                    }}
+                  >
+                    <tbody>
+                      {selectedArguments.algo.map((al) => {
+                        return (
+                          <tr>
+                            <td>{al.labelWOExt}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </Table>
+                </Stack>
+
+                {selectedArguments.data.map((d) => {
+                  return (
+                    <Stack spacing={0}>
+                      <Table withBorder withColumnBorders>
+                        <thead>
+                          <tr>
+                            <th style={{ textAlign: "center" }}>{d.label}</th>
+                          </tr>
+                        </thead>
+                      </Table>
+                      <Table withBorder withColumnBorders striped>
+                        <thead>
+                          <tr>
+                            <th>SSE</th>
+                            <th>RANK</th>
+                          </tr>
+                        </thead>
+                        {result && d && (
+                          <ResultTableBody
+                            fixTo={fixto}
+                            selectedArguments={selectedArguments}
+                            result={result}
+                            data={d}
+                          />
+                        )}
+                      </Table>
+                    </Stack>
+                  );
+                })}
+                <Stack spacing={0}>
+                  <Table sx={{ opacity: 0 }} withColumnBorders withBorder>
+                    <thead>
+                      <tr>
+                        <th style={{ opacity: 0 }}>.</th>
+                      </tr>
+                    </thead>
+                  </Table>
+
+                  <Table
+                    withBorder
+                    striped
+                    sx={{
+                      width: "max-content",
+                      "th, tr": {
+                        whiteSpace: "nowrap",
+                      },
+                      position: "sticky",
+                      left: 0,
+                    }}
+                  >
+                    <thead>
+                      <tr>
+                        <th style={{ opacity: 1 }}>ORTALAMA RANK</th>
+                      </tr>
+                    </thead>
+                    <ResultTableEnd
+                      selectedArguments={selectedArguments}
+                      result={result}
+                    />
+                  </Table>
+                </Stack>
+              </Group>
+            </Box>
+          </Stack>
+        </Tabs.Panel>
+        <Tabs.Panel value="graph">
+          {result?.map((r) => {
             const createOptions = (prop, title) => {
+              const series = [
+                {
+                  name: title,
+                  data: r.series[prop],
+                  colors: [],
+                  show: false,
+                },
+              ];
               return {
-                theme: {
-                  mode: "dark",
-                },
-                tooltip: {
-                  theme: "dark",
-                },
-                dataLabels: {
-                  enabled: false,
-                },
-                labels: {
-                  styles: {
-                    colors: ["white"],
+                options: {
+                  theme: {
+                    mode: appTheme,
+                  },
+                  tooltip: {
+                    theme: appTheme,
+                  },
+                  dataLabels: {
+                    enabled: false,
+                  },
+                  chart: {
+                    id: "basic-bar",
+                    foreColor: "white",
+                  },
+                  xaxis: {
+                    categories: r.categories,
                   },
                 },
-                chart: {
-                  type: "bar",
-                  foreColor: "white",
-                },
-                series: [
-                  {
-                    name: title,
-                    data: r.series[prop],
-                    colors: [],
-                    show: false,
-                  },
-                ],
-                xaxis: {
-                  categories: r.categories,
-                },
+                series,
               };
             };
+
             return (
               <Stack>
                 <Text>{r.labelWOExt}</Text>
@@ -337,239 +587,17 @@ const Output = () => {
               </Stack>
             );
           })}
-        </Box>
-      )}
+        </Tabs.Panel>
+        <Tabs.Panel value="result">
+          <Prism language="json">{JSON.stringify(result, null, 4)}</Prism>
+        </Tabs.Panel>
 
-      {tab === "table" && (
-        <Stack
-          style={{
-            width: "100%",
-            height: "100%",
-          }}
-        >
-          <Button
-            variant="subtle"
-            rightIcon={<BsDownload />}
-            onClick={downloadAsPng}
-          >
-            Download As PNG
-          </Button>
-          <NumberInput
-            value={fixto}
-            onChange={(v) => {
-              if (v > 0 && v < 20) {
-                setFixto(Math.floor(v));
-              }
-            }}
-            label="Virgülden Sonraki Basamak"
-            min={1}
-            max={20}
-          />
-          <Box
-            style={{
-              width: "100%",
-              height: "100%",
-              overflow: "auto",
-            }}
-          >
-            <Group
-              component={Paper}
-              noWrap
-              ref={imgRef}
-              spacing={0}
-              align="flex-start"
-              sx={{ width: "max-content" }}
-            >
-              <Stack spacing={0}>
-                <Table sx={{ opacity: 0 }} withBorder withColumnBorders>
-                  <tbody>
-                    <tr>
-                      <td style={{ opacity: 0 }}>.</td>
-                    </tr>
-                    <tr>
-                      <td style={{ opacity: 0 }}>.</td>
-                    </tr>
-                  </tbody>
-                </Table>
-                <Table
-                  withBorder
-                  striped
-                  sx={{
-                    width: "max-content",
-                    "th, tr": {
-                      whiteSpace: "nowrap",
-                    },
-                    position: "sticky",
-                    left: 0,
-                  }}
-                >
-                  <tbody>
-                    {selectedArguments.algo.map((al) => {
-                      return (
-                        <tr>
-                          <td>{al.labelWOExt}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </Table>
-              </Stack>
-
-              {selectedArguments.data.map((d) => {
-                return (
-                  <Stack spacing={0}>
-                    <Table withBorder withColumnBorders>
-                      <thead>
-                        <tr>
-                          <th style={{ textAlign: "center" }}>{d.label}</th>
-                        </tr>
-                      </thead>
-                    </Table>
-                    <Table withBorder withColumnBorders striped>
-                      <thead>
-                        <tr>
-                          <th>SSE</th>
-                          <th>RANK</th>
-                        </tr>
-                      </thead>
-                      <ResultTableBody
-                        fixTo={fixto}
-                        selectedArguments={selectedArguments}
-                        result={result}
-                        data={d}
-                      />
-                    </Table>
-                  </Stack>
-                );
-              })}
-            </Group>
-          </Box>
-        </Stack>
-      )}
-      {tab === "terminal" && (
-        <Stack
-          sx={{
-            width: "100%",
-            height: "100%",
-            overflow: "hidden",
-          }}
-          align="start"
-          justify="flex-start"
-          spacing={10}
-          p={4}
-        >
-          <Switch
-            checked={detailed}
-            onChange={(e) => {
-              setDetailed(e.target.checked);
-            }}
-            label="Show Details"
-            sx={{
-              alignSelf: "flex-end",
-            }}
-          />
-          <MultiSelect
-            label="Output Tipleri"
-            color="red"
-            onChange={(v) => {
-              setMultiFilter(v);
-            }}
-            data={[
-              {
-                label: "Error",
-                value: "error",
-              },
-              {
-                label: "Detail",
-                value: "detail",
-              },
-              {
-                label: "Print",
-                value: "print",
-              },
-              {
-                label: "End",
-                value: "end",
-              },
-              {
-                label: "Start",
-                value: "start",
-              },
-            ]}
-          />
-          <Divider sx={{ width: "100%" }} />
-          <Box sx={{ flex: 1, overflow: "auto", width: "100%" }}>
-            <Stack sx={{ width: "100%" }}>
-              {outputMessage
-                .filter((d) =>
-                  multiFilter.length === 0 ? d : multiFilter.includes(d.type)
-                )
-                .filter((d) => {
-                  return detailed ? d : d.type !== "detail";
-                })
-                .map((om, i) => (
-                  <Group
-                    sx={{ width: "100%", height: "100%", overflow: "auto" }}
-                    position="apart"
-                    noWrap
-                    align="start"
-                    key={i}
-                  >
-                    <Group>
-                      <Text
-                        weight={"bold"}
-                        align="right"
-                        sx={(theme) => ({
-                          backgroundColor:
-                            theme.colors.gray[
-                              theme.colorScheme === "dark" ? 7 : 1
-                            ],
-                          opacity: 0.7,
-                          width: 80,
-                        })}
-                      >
-                        {i + 1}
-                      </Text>
-                      <Divider orientation="vertical" />
-                      <Text>{om.message}</Text>
-                    </Group>
-                    {om.type === "start" && (
-                      <Badge color={"green"}>Started</Badge>
-                    )}
-                    {om.type === "end" && <Badge color={"blue"}>End</Badge>}
-                    {om.type === "print" && (
-                      <Badge color={"orange"}>Print</Badge>
-                    )}
-                    {om.type === "detail" && (
-                      <Badge color={"indigo"}>Detail</Badge>
-                    )}
-                    {om.type === "error" && <Badge color={"red"}>Error</Badge>}
-                  </Group>
-                ))}
-            </Stack>
-          </Box>
-        </Stack>
-      )}
-      {tab === "arguments" && (
-        <Prism
-          sx={{
-            overflow: "auto",
-          }}
-          language="json"
-        >
-          {JSON.stringify(selectedArguments, null, 4)}
-        </Prism>
-      )}
-      {tab === "result" && (
-        <Prism
-          sx={{
-            overflow: "auto",
-          }}
-          language="json"
-        >
-          {JSON.stringify(result, null, 4)}
-        </Prism>
-      )}
+        <Tabs.Panel value="arguments">
+          <Prism language="json">
+            {JSON.stringify(selectedArguments, null, 4)}
+          </Prism>
+        </Tabs.Panel>
+      </Tabs>
     </Stack>
   );
 };
@@ -631,9 +659,41 @@ const DialogBody = ({ sse, onClose, defaultFixTo }) => {
   );
 };
 
+const ResultTableEnd = ({ selectedArguments, result }) => {
+  return (
+    <tbody>
+      {selectedArguments.algo.map((al) => {
+        let mean = 0;
+        selectedArguments.data.forEach((d) => {
+          const resultData = result?.find((r) => r.name === d.name);
+          const data = resultData?.data?.find(
+            (rd) => rd?.algorithm_name === al.label
+          );
+          const sorted = Array.from(
+            new Set(resultData?.data?.map((d) => d?.sse).sort())
+          );
+
+          mean += sorted.indexOf(data?.sse) + 1;
+        });
+        return (
+          <tr>
+            <td>
+              <Text align="center">
+                {mean / selectedArguments?.data?.length}
+              </Text>
+            </td>
+          </tr>
+        );
+      })}
+    </tbody>
+  );
+};
+
 const ResultTableBody = ({ selectedArguments, result, data: d, fixTo }) => {
-  const resultData = result.find((r) => r.label === d.name);
-  const sorted = resultData.data.map((d) => d.sse).sort();
+  const resultData = result?.find((r) => r.name === d.name);
+  const sorted = Array.from(
+    new Set(resultData?.data?.map((d) => d.sse).sort())
+  );
   const [dialog, setDialog] = useState({
     visibility: false,
     data: 0,
@@ -650,7 +710,7 @@ const ResultTableBody = ({ selectedArguments, result, data: d, fixTo }) => {
     <>
       <tbody>
         {selectedArguments.algo.map((al) => {
-          const data = resultData.data.find(
+          const data = resultData?.data?.find(
             (d) => d.algorithm_name === al.label
           );
           const sse = data?.sse;
@@ -668,7 +728,7 @@ const ResultTableBody = ({ selectedArguments, result, data: d, fixTo }) => {
                 }}
               >
                 <Tooltip openDelay={500} label={data?.sse}>
-                  <Text>{sseFixed ?? data.sse}</Text>
+                  <Text>{sseFixed ?? data?.sse}</Text>
                 </Tooltip>
               </td>
               <td

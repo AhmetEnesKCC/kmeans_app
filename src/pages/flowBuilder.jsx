@@ -26,12 +26,13 @@ import { setArguments } from "../redux/argumentSlice";
 import FlowCard from "../components/flowCard";
 import { BiPlay } from "react-icons/bi";
 import { AiOutlineArrowRight, AiOutlineReload } from "react-icons/ai";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { setLoading, setLoadingVisiblity } from "../redux/uiSlice";
 import { openModal } from "@mantine/modals";
 import FilePreview from "../components/FilePreview";
 import { useCallback } from "react";
 import { showNotification } from "@mantine/notifications";
+import { setOutputScreen } from "../redux/outputScreenSlice";
 
 const { ipcRenderer } = window.require("electron");
 
@@ -66,6 +67,12 @@ const FlowBuilder = () => {
       setData(eData);
     });
   }, []);
+
+  const navigate = useNavigate();
+  const handleRun = () => {
+    dispatch(setOutputScreen("run"));
+    navigate("/output");
+  };
 
   return (
     <Group
@@ -149,11 +156,14 @@ const FlowBuilder = () => {
               Aksiyonlar
             </Text>
             <Group>
-              <Link to="/output">
-                <Button leftIcon={<BiPlay />} size="sm" color="green">
-                  Run
-                </Button>
-              </Link>
+              <Button
+                onClick={handleRun}
+                leftIcon={<BiPlay />}
+                size="sm"
+                color="green"
+              >
+                Run
+              </Button>
             </Group>
           </Group>
         </Box>
