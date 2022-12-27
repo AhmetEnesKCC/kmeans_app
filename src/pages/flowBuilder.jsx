@@ -33,6 +33,7 @@ import FilePreview from "../components/FilePreview";
 import { useCallback } from "react";
 import { showNotification } from "@mantine/notifications";
 import { setOutputScreen } from "../redux/outputScreenSlice";
+import { useTranslation } from "react-i18next";
 
 const { ipcRenderer } = window.require("electron");
 
@@ -74,6 +75,12 @@ const FlowBuilder = () => {
     navigate("/output");
   };
 
+  const { data: arData, algo: arAlgo } = useSelector(
+    (state) => state.selectedArguments
+  );
+
+  const { t } = useTranslation();
+
   return (
     <Group
       align="start"
@@ -90,11 +97,11 @@ const FlowBuilder = () => {
           {data.every((d) => !d.content) ? (
             <Stack px={20} align={"center"}>
               <Text weight={"bold"} p={8}>
-                Ayarlardan Klasör Yollarını Seçmelisiniz
+                {t("choose folder destination from settings")}
               </Text>
               <Link to={"/settings"}>
                 <Button rightIcon={<AiOutlineArrowRight />}>
-                  Ayarlara Git
+                  {t("go to settings")}
                 </Button>
               </Link>
             </Stack>
@@ -130,7 +137,7 @@ const FlowBuilder = () => {
           align="center"
           sx={{ width: "100%" }}
         >
-          <Text>Reload Files</Text>
+          <Text>{t("reload files")}</Text>
           <Button onClick={getFiles} variant="subtle">
             <AiOutlineReload />
           </Button>
@@ -152,17 +159,22 @@ const FlowBuilder = () => {
               sx={{
                 opacity: 0.7,
               }}
+              transform="capitalize"
             >
-              Aksiyonlar
+              {t("actions")}
             </Text>
             <Group>
               <Button
+                disabled={!(arData.length > 0 && arAlgo.length > 0)}
                 onClick={handleRun}
                 leftIcon={<BiPlay />}
                 size="sm"
+                sx={{
+                  textTransform: "capitalize",
+                }}
                 color="green"
               >
-                Run
+                {t("run")}
               </Button>
             </Group>
           </Group>
@@ -187,23 +199,27 @@ const FlowBuilder = () => {
 };
 
 const FlowTabList = ({ data = [] }) => {
+  const { t } = useTranslation();
   return data
     .filter((d) => d.content)
     .map((d) => (
       <Tabs.Tab key={data.fileType} value={d.fileType}>
-        {d.label}
+        {t(d?.label?.toLowerCase())}
       </Tabs.Tab>
     ));
 };
 
 const FlowTabPanel = ({ data = [] }) => {
+  const { t } = useTranslation();
   return data
     .filter((d) => d.content)
     .map((d) => (
       <Tabs.Panel value={d.fileType} sx={{ height: "100%" }}>
         <Stack sx={{ flex: 1, height: "100%", overflow: "hidden" }}>
           <Box sx={{ flex: 1, height: "100%", overflow: "auto" }}>
-            <FlowPanelContent data={d}>{d.label}</FlowPanelContent>
+            <FlowPanelContent data={d}>
+              {t(d?.label?.toLowerCase())}
+            </FlowPanelContent>
           </Box>
         </Stack>
       </Tabs.Panel>
@@ -271,6 +287,8 @@ const FlowPanelContent = ({ data = {}, showContent }) => {
 
   const switchRef = useRef(null);
 
+  const { t } = useTranslation();
+
   if (data.iteratable) {
     return (
       <Stack>
@@ -287,7 +305,7 @@ const FlowPanelContent = ({ data = {}, showContent }) => {
               </Tooltip>
             )}
             <Group>
-              <Text>{data.label}</Text>
+              <Text>{t(data.label?.toLowerCase())}</Text>
               {data.content.some((d) => !d.iteratable) && (
                 <Switch onClick={handleSelectAll} checked={isAllChecked()} />
               )}

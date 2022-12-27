@@ -8,9 +8,11 @@ import { FaProjectDiagram } from "react-icons/fa";
 import { FiSettings } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { AiOutlineCode } from "react-icons/ai";
+import { useTranslation } from "react-i18next";
 const { ipcRenderer } = window.require("electron");
 
 const IndexPage = () => {
+  const { t } = useTranslation();
   useEffect(() => {
     ipcRenderer.on("log-from-main", (e, data) => {
       console.log(data);
@@ -18,8 +20,8 @@ const IndexPage = () => {
   }, []);
 
   const keyChanger = {
-    word: "Kavram",
-    definition: "Tanım",
+    word: t("term"),
+    definition: t("definition"),
   };
 
   const definitions = [
@@ -42,8 +44,8 @@ const IndexPage = () => {
   return (
     <Stack sx={{ width: "100%", height: "100%" }}>
       <Stack p={10} component={PageBox}>
-        <Text sx={{ width: "max-content" }} p={2}>
-          Sayfalar
+        <Text transform="capitalize" sx={{ width: "max-content" }} p={2}>
+          {t("pages")}
         </Text>
         <Group
           spacing={32}
@@ -52,7 +54,7 @@ const IndexPage = () => {
           }}
         >
           <SuperBox
-            title={"Flow Builder"}
+            title={t("flow builder")}
             icon={<FaProjectDiagram size={20} />}
             color="green"
             hoverColorIndex={5}
@@ -61,7 +63,7 @@ const IndexPage = () => {
             to="/flow-builder"
           />
           <SuperBox
-            title={"Settings"}
+            title={t("settings")}
             icon={<FiSettings size={20} />}
             color="blue"
             hoverColorIndex={5}
@@ -70,26 +72,26 @@ const IndexPage = () => {
             to="/settings"
           />
           <SuperBox
-            title={"Kod Düzenle"}
+            title={t("edit code")}
             icon={<AiOutlineCode size={20} />}
             color="orange"
             hoverColorIndex={5}
             colorIndex={6}
             text={"white"}
-            to="/edit-code"
+            // to="/edit-code"
             soon
           />
         </Group>
       </Stack>
-      <Stack
-        sx={{
+      {/* <Stack
+        sx=
+        {{
           overflow: "auto",
         }}
         p={10}
-        component={PageBox}
-      >
+        component={PageBox}>
         <Text sx={{ width: "max-content" }} p={2}>
-          Kavram Tanımları
+          {t("dictionary")}
         </Text>
         <Table striped withBorder withColumnBorders>
           <thead>
@@ -106,7 +108,7 @@ const IndexPage = () => {
             ))}
           </tbody>
         </Table>
-      </Stack>
+      </Stack> */}
     </Stack>
   );
 };

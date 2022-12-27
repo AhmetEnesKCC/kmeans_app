@@ -7,6 +7,7 @@ import {
   Input,
   NumberInput,
   Stack,
+  Text,
 } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import { useEffect, useState } from "react";
@@ -15,6 +16,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setSettings } from "../redux/settingsSlice";
 import PageBox from "../components/Layout/PageBox";
 import { resetArguments, setArguments, setLoop } from "../redux/argumentSlice";
+import { useTranslation } from "react-i18next";
 
 const { ipcRenderer } = window.require("electron");
 
@@ -63,6 +65,7 @@ const Settings = () => {
 
   const { classes } = styles();
 
+  const { t } = useTranslation();
   return (
     <Box>
       <form
@@ -89,7 +92,7 @@ const Settings = () => {
       >
         <Stack component={PageBox} spacing={30} p={10}>
           <NumberInput
-            label="Loop"
+            label={t("loop")}
             placeholder="Loop Girin"
             value={localLoop}
             onChange={(value) => {
@@ -98,7 +101,10 @@ const Settings = () => {
             }}
           />
           <Group noWrap align={"end"}>
-            <Input.Wrapper className={classes.inputWrapper} label="Algorithms">
+            <Input.Wrapper
+              className={classes.inputWrapper}
+              label={t("algorithms")}
+            >
               <Input
                 onClick={() => {
                   handleSelectFolder("algo");
@@ -113,11 +119,14 @@ const Settings = () => {
                 handleSelectFolder("algo");
               }}
             >
-              Klasör Seç
+              {t("browse-folder")}
             </Button>
           </Group>
           <Group noWrap align={"end"}>
-            <Input.Wrapper className={classes.inputWrapper} label="Datasets">
+            <Input.Wrapper
+              className={classes.inputWrapper}
+              label={t("datasets")}
+            >
               <Input
                 onClick={() => {
                   handleSelectFolder("data");
@@ -132,7 +141,7 @@ const Settings = () => {
                 handleSelectFolder("data");
               }}
             >
-              Klasör Seç
+              {t("browse-folder")}
             </Button>
           </Group>{" "}
           <Button
@@ -146,10 +155,11 @@ const Settings = () => {
             sx={(theme) => ({
               color: theme.colors.white,
               width: "max-content",
+              textTransform: "capitalize",
             })}
             variant="gradient"
           >
-            Onayla
+            {t("apply")}
           </Button>
         </Stack>
       </form>

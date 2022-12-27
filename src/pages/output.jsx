@@ -38,6 +38,7 @@ import html2canvas from "html2canvas";
 import { showNotification, cleanNotifications } from "@mantine/notifications";
 import { setLoading } from "../redux/uiSlice";
 import { setOutputScreen } from "../redux/outputScreenSlice";
+import { useTranslation } from "react-i18next";
 
 const { ipcRenderer } = window.require("electron");
 
@@ -74,19 +75,23 @@ const Output = () => {
   const [visit, setVisit] = useState(false);
 
   useEffect(() => {
+    if (
+      selectedArguments.data.length === 0 ||
+      selectedArguments.algo.length === 0
+    ) {
+      setProgress(100);
+      setStatus("done");
+
+      return;
+    }
     const multiplication =
       selectedArguments.data.length * selectedArguments.algo.length;
-    if (multiplication !== 0) {
-      setProgress(
-        Math.floor(
-          (outputStep * 100) /
-            (selectedArguments.data.length * selectedArguments.algo.length)
-        )
-      );
-    } else {
-      setProgress(100);
-    }
-  }, [outputStep]);
+    setProgress(Math.floor((outputStep * 100) / multiplication));
+  }, [outputStep, selectedArguments]);
+
+  useEffect(() => {
+    console.log(progress);
+  }, [progress]);
 
   useEffect(() => {
     setTab("terminal");
@@ -101,7 +106,13 @@ const Output = () => {
       setStatus("done");
       return;
     }
-    if (progress >= 100 && !isLoading) {
+    if (
+      progress >= 100 &&
+      !isLoading &&
+      selectedArguments.data.length > 0 &&
+      selectedArguments.algo.length > 0 &&
+      !result
+    ) {
       dispatch(
         setLoading({
           visible: true,
@@ -182,10 +193,18 @@ const Output = () => {
   }, [tab]);
 
   const runCode = useCallback(() => {
-    setTab("terminal");
-    setVisit(false);
-    ipcRenderer.send("run", selectedArguments);
-  }, []);
+    setOutputMessage([]);
+    if (
+      selectedArguments.data.length > 0 &&
+      selectedArguments.algo.length > 0
+    ) {
+      setTab("terminal");
+      setVisit(false);
+      ipcRenderer.send("run", selectedArguments);
+    } else {
+      setOutputMessage((m) => [...m, { message: "End", type: "end" }]);
+    }
+  }, [selectedArguments]);
 
   const stopCode = useCallback(() => {
     setStatus("stop");
@@ -197,6 +216,8 @@ const Output = () => {
   useEffect(() => {
     runCode();
   }, []);
+
+  const { t } = useTranslation();
 
   const [fixto, setFixto] = useState(4);
 
@@ -234,10 +255,10 @@ const Output = () => {
       </Box>
       <Group position="apart">
         <Group p={4}>
-          {status === "done" && <Badge color="green">Done</Badge>}
-          {status === null && <Badge color="orange">Processing</Badge>}
-          {status === "error" && <Badge color="red">Error</Badge>}
-          {status === "stop" && <Badge color="blue">Stop</Badge>}
+          {status === "done" && <Badge color="green">{t("done")}</Badge>}
+          {status === null && <Badge color="orange">{t("processing")}</Badge>}
+          {status === "error" && <Badge color="red">{t("error")}</Badge>}
+          {status === "stop" && <Badge color="blue">{t("stop")}</Badge>}
           <Text weight="bold">
             {progress && (progress < 100 ? progress : 100) + "%"}
           </Text>
@@ -248,8 +269,11 @@ const Output = () => {
             onClick={runCode}
             variant="subtle"
             rightIcon={<AiOutlineReload />}
+            sx={{
+              textTransform: "capitalize",
+            }}
           >
-            Yeniden Çalıştır
+            {t("restart")}
           </Button>
         )}
         {!["done", "error", "stop"].includes(status) && (
@@ -258,12 +282,12 @@ const Output = () => {
             variant="subtle"
             rightIcon={<AiFillStop />}
           >
-            Durdur
+            {t("stop")}
           </Button>
         )}
         {status === "stop" && (
           <Button onClick={runCode} variant="subtle" rightIcon={<AiFillStop />}>
-            Başlat
+            {t("start")}
           </Button>
         )}
       </Group>
@@ -286,7 +310,7 @@ const Output = () => {
       >
         <Tabs.List>
           <Tabs.Tab value="terminal" icon={<BsTerminal />} color={"green.6"}>
-            Terminal
+            {t("terminal")}
           </Tabs.Tab>
           <Tabs.Tab
             disabled={!Boolean(result && status === "done")}
@@ -294,7 +318,7 @@ const Output = () => {
             icon={<BsTable />}
             color={"lime.8"}
           >
-            Tablo
+            {t("table")}
           </Tabs.Tab>
           <Tabs.Tab
             disabled={!Boolean(result && status === "done")}
@@ -302,7 +326,7 @@ const Output = () => {
             icon={<BsGraphUp />}
             color={"orange.5"}
           >
-            Grafik
+            {t("graph")}
           </Tabs.Tab>
           <Tabs.Tab
             disabled={!Boolean(result && status === "done")}
@@ -310,10 +334,10 @@ const Output = () => {
             icon={<AiOutlineSolution />}
             color={"violet.5"}
           >
-            Result JSON
+            {t("result")} JSON
           </Tabs.Tab>
           <Tabs.Tab value="arguments" icon={<VscOutput />} color={"blue.6"}>
-            Argumanlar
+            {t("arguments")} JSON
           </Tabs.Tab>
         </Tabs.List>
         <Tabs.Panel value="terminal">
@@ -333,36 +357,39 @@ const Output = () => {
               onChange={(e) => {
                 setDetailed(e.target.checked);
               }}
-              label="Show Details"
+              label={t("show details")}
               sx={{
                 alignSelf: "flex-end",
               }}
             />
             <MultiSelect
-              label="Output Tipleri"
+              label={t("output types")}
+              sx={{
+                textTransform: "capitalize",
+              }}
               color="red"
               onChange={(v) => {
                 setMultiFilter(v);
               }}
               data={[
                 {
-                  label: "Error",
+                  label: t("error"),
                   value: "error",
                 },
                 {
-                  label: "Detail",
+                  label: t("detail"),
                   value: "detail",
                 },
                 {
-                  label: "Print",
+                  label: t("print"),
                   value: "print",
                 },
                 {
-                  label: "End",
+                  label: t("end"),
                   value: "end",
                 },
                 {
-                  label: "Start",
+                  label: t("start"),
                   value: "start",
                 },
               ]}
@@ -379,7 +406,11 @@ const Output = () => {
                   })
                   .map((om, i) => (
                     <Group
-                      sx={{ width: "100%", height: "100%", overflow: "auto" }}
+                      sx={{
+                        width: "100%",
+                        height: "100%",
+                        overflow: "auto",
+                      }}
                       position="apart"
                       noWrap
                       align="start"
@@ -404,17 +435,19 @@ const Output = () => {
                         <Text>{om.message}</Text>
                       </Group>
                       {om.type === "start" && (
-                        <Badge color={"green"}>Started</Badge>
+                        <Badge color={"green"}>{t("start")}</Badge>
                       )}
-                      {om.type === "end" && <Badge color={"blue"}>End</Badge>}
+                      {om.type === "end" && (
+                        <Badge color={"blue"}>{t("end")}</Badge>
+                      )}
                       {om.type === "print" && (
-                        <Badge color={"orange"}>Print</Badge>
+                        <Badge color={"orange"}>{t("print")}</Badge>
                       )}
                       {om.type === "detail" && (
-                        <Badge color={"indigo"}>Detail</Badge>
+                        <Badge color={"indigo"}>{t("detail")}</Badge>
                       )}
                       {om.type === "error" && (
-                        <Badge color={"red"}>Error</Badge>
+                        <Badge color={"red"}>{t("error")}</Badge>
                       )}
                     </Group>
                   ))}
@@ -432,7 +465,12 @@ const Output = () => {
                     setFixto(Math.floor(v));
                   }
                 }}
-                label="Virgülden Sonraki Basamak"
+                styles={{
+                  label: {
+                    textTransform: "capitalize",
+                  },
+                }}
+                label={t("decimal numbers")}
                 min={1}
                 max={20}
               />
@@ -509,7 +547,9 @@ const Output = () => {
                         <thead>
                           <tr>
                             <th>SSE</th>
-                            <th>RANK</th>
+                            <th style={{ textTransform: "capitalize" }}>
+                              {t("rank")}
+                            </th>
                           </tr>
                         </thead>
                         {result && d && (
@@ -547,7 +587,9 @@ const Output = () => {
                   >
                     <thead>
                       <tr>
-                        <th style={{ opacity: 1 }}>ORTALAMA RANK</th>
+                        <th style={{ opacity: 1, textTransform: "capitalize" }}>
+                          {t("average")} {t("rank")}
+                        </th>
                       </tr>
                     </thead>
                     <ResultTableEnd
@@ -599,7 +641,7 @@ const Output = () => {
                 <Text>{r.labelWOExt}</Text>
                 <Group grow noWrap spacing={12} p={3}>
                   <Chart
-                    title={"Time"}
+                    title={t("time")}
                     chartOptions={createOptions("time", "time")}
                   />
                   <Chart
@@ -626,6 +668,7 @@ const Output = () => {
 };
 
 const DialogBody = ({ sse, onClose, defaultFixTo }) => {
+  const { t } = useTranslation();
   const [fixto, setFixto] = useState(defaultFixTo ?? 4);
   const clipboard = useClipboard();
 
@@ -636,7 +679,7 @@ const DialogBody = ({ sse, onClose, defaultFixTo }) => {
   const handleCopy = (str) => {
     clipboard.copy(str);
     showNotification({
-      message: "Kopyalandı: " + str,
+      message: t("copied") + ": " + str,
       color: "green",
     });
     onClose?.();
@@ -649,7 +692,7 @@ const DialogBody = ({ sse, onClose, defaultFixTo }) => {
       </ActionIcon>
       <Group>
         <Text>{sse}</Text>
-        <Button onClick={() => handleCopy(sse)}>SSE Kopyala</Button>
+        <Button onClick={() => handleCopy(sse)}>SSE {t("copy")}</Button>
       </Group>
       <Divider orientation="horizontal" />
       <Group noWrap>
@@ -660,7 +703,7 @@ const DialogBody = ({ sse, onClose, defaultFixTo }) => {
               min={1}
               max={20}
               step={1}
-              label="Virgülden sonraki basamak"
+              label={t("decimal numbers")}
               value={fixto}
               onChange={(v) => {
                 if (v > 0 && v < 20) {
@@ -673,7 +716,7 @@ const DialogBody = ({ sse, onClose, defaultFixTo }) => {
                 handleCopy(fixed());
               }}
             >
-              Kopyala
+              {t("copy")}
             </Button>
           </Group>
         </Stack>

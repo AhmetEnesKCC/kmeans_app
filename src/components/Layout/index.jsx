@@ -28,13 +28,17 @@ import {
   cleanNotifications,
   showNotification,
 } from "@mantine/notifications";
+import { useTranslation } from "react-i18next";
+import { setTheme } from "../../redux/uiSlice";
 
 const { ipcRenderer } = window.require("electron");
 
 const Layout = ({ children }) => {
-  const routePathName = useLocation()
-    .pathname.replace("-", " ")
-    .replace("/", "");
+  const { t } = useTranslation();
+  const routePathName = t(
+    useLocation().pathname.replace("-", " ").replace("/", "")
+  );
+
   const navigate = useNavigate();
 
   const dispatch = useDispatch();
@@ -57,6 +61,20 @@ const Layout = ({ children }) => {
   useEffect(() => {
     cleanNotificationsQueue();
   }, [notifications]);
+
+  const { i18n } = useTranslation();
+
+  useEffect(() => {
+    ipcRenderer.send("get-app-settings");
+    ipcRenderer.on("settings-send", (e, settings) => {
+      if (settings?.language) {
+        i18n.changeLanguage(settings?.language);
+      }
+      if (settings?.theme) {
+        dispatch(setTheme(settings.theme));
+      }
+    });
+  }, []);
 
   // const showSummary = useSelector((state) => state.showSummary);
   return (
@@ -94,12 +112,13 @@ const Layout = ({ children }) => {
                   width: "max-content",
                   borderRadius: theme.radius.md,
                 })}
+                transform="capitalize"
                 component={PageBox}
                 px={10}
                 size={18}
                 weight="bold"
               >
-                {_.capitalize(routePathName === "" ? "home" : routePathName)}
+                {routePathName === "" ? t("home") : routePathName}
               </Text>
             </Group>
 

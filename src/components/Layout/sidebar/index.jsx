@@ -10,16 +10,19 @@ import {
 import { FaProjectDiagram } from "react-icons/fa";
 import { FiSettings } from "react-icons/fi";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const Sidebar = () => {
   const menubar = useSelector((state) => state.menubar);
 
+  const { t } = useTranslation();
+
   const links = [
-    { label: "Flow Builder", link: "flow-builder", icon: FaProjectDiagram },
+    { label: t("flow builder"), link: "flow-builder", icon: FaProjectDiagram },
   ];
 
   const bottomLinks = [
-    { label: "Settings", link: "settings", icon: FiSettings },
+    { label: t("settings"), link: "settings", icon: FiSettings },
   ];
 
   return (

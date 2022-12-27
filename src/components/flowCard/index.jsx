@@ -15,13 +15,16 @@ import { ImFileEmpty } from "react-icons/im";
 import { BiClipboard, BiTrash } from "react-icons/bi";
 import { FcInfo } from "react-icons/fc";
 import { openModal } from "@mantine/modals";
+import { useTranslation } from "react-i18next";
 
 const FlowCard = ({ flowKey }) => {
   const data = useSelector((state) => state.selectedArguments[flowKey]);
 
+  const { t } = useTranslation();
+
   const labelChanger = {
-    algo: "Algorithms",
-    data: "Datasets",
+    algo: t("algorithms"),
+    data: t("datasets"),
   };
 
   const dispatch = useDispatch();
@@ -54,6 +57,7 @@ const FlowCard = ({ flowKey }) => {
             weight={"bold"}
             align="center"
             sx={(theme) => ({})}
+            transform="capitalize"
           >
             {labelChanger[flowKey]}
           </Text>
@@ -64,7 +68,7 @@ const FlowCard = ({ flowKey }) => {
             px={2}
             py={1}
           >
-            Temizle
+            {t("clear")}
           </Button>
         </Group>
         <Stack
@@ -176,8 +180,9 @@ const FlowCardItem = ({ data }) => {
               borderRadius: theme.radius.md,
             },
           })}
+          onClick={handleDelete}
         >
-          <BiTrash onClick={handleDelete} />
+          <BiTrash />
         </Box>
         <Box
           p={3}

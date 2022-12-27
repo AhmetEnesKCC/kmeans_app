@@ -28,9 +28,7 @@ const store = new Store();
 const { PythonShell } = require("python-shell");
 const { DateTime } = require("luxon");
 const convertHumanReadable = require("./helpers/converHumanReadable");
-const { data } = require("autoprefixer");
-const { exec, execSync, spawn, spawnSync } = require("child_process");
-const { eventWrapper } = require("@testing-library/user-event/dist/utils");
+const { spawnSync } = require("child_process");
 
 const pythonRunnerLocation = () => {
   return isDev
@@ -51,6 +49,8 @@ let outputWindow;
 const public_path = path.resolve(__dirname, "public");
 
 let staticOptions = {
+  minWidth: 712,
+  minHeight: 500,
   webPreferences: {
     nodeIntegration: true,
     enableRemoteModule: true,

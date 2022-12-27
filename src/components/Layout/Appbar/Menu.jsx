@@ -1,11 +1,4 @@
-const {
-  Menu,
-  Text,
-  createStyles,
-  Button,
-  Switch,
-  Group,
-} = require("@mantine/core");
+const { Menu, Text, createStyles, Button } = require("@mantine/core");
 
 const BarMenu = ({ target, dropdown = [] }) => {
   const styles = createStyles({
@@ -34,7 +27,13 @@ const BarMenu = ({ target, dropdown = [] }) => {
           d.type === "divider" ? (
             <Menu.Divider />
           ) : (
-            <Menu.Item className={classes.link} onClick={d.click}>
+            <Menu.Item
+              className={classes.link}
+              sx={{
+                textTransform: "capitalize",
+              }}
+              onClick={d.click}
+            >
               {d.label}
             </Menu.Item>
           )
